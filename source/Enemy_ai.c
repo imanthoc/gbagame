@@ -1,0 +1,416 @@
+#include <stdlib.h>
+
+#include "Enemy_ai.h"
+#include "Utilities.h"
+#include "agb.h"
+
+// counter for each enemy, when counter[i] == 60, enemy [i] fires
+static u8 enemy_bullet_delay[4] = { 0, 0, 0, 0 };
+
+// IF the [i] enemy needs to fire then he will search for an empty OAM spot
+// IF the enemy finds an empty OAM spot, it will be saved in this array before vblank,
+// and during vblank the bullet will be drawn
+static u8 enemy_bullet_index[4] = { 200, 200, 200, 200 };
+
+// OAM index that the next enemy will be stored at, calculated before vlbank and drawn during vblank
+static u8 next_enemy_index = 200;
+// orientation of the next enemy (random)
+static u8 orientation = 200;
+// delay counter for the next enemy to be spawned
+static u8 enemy_delay = 0;
+
+// self explanatory
+static s8 enemy_hp[4] = { 0, 0, 0, 0 };
+
+// animation counters
+static u8 anim_delay = 0;
+static u8 frame_oam_index = 1;
+static u8 next_frame = 1;
+
+// TODO: fix this stupid animation
+static u8 death_anim_counter[4] = { 0, 0, 0, 0 };
+
+static const u8 death_anim_sprite[60] = {
+    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
+    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
+    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
+    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
+    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
+    81, 81, 81, 81, 81, 89, 89, 89, 89, 89
+};
+
+// TECHNICALLY bit shifts in signed numbers are undefined
+static inline s8 abs_b(s8 x)
+{
+    s8 mask = x >> 7;
+    return (x ^ mask) - mask;
+}
+
+void reset_enemy_ai()
+{
+    enemy_bullet_delay[0] = 0;
+    enemy_bullet_delay[1] = 0;
+    enemy_bullet_delay[2] = 0;
+    enemy_bullet_delay[3] = 0;
+
+    enemy_bullet_index[0] = 200;
+    enemy_bullet_index[1] = 200;
+    enemy_bullet_index[2] = 200;
+    enemy_bullet_index[3] = 200;
+
+    next_enemy_index = 200;
+    orientation = 200;
+    enemy_delay = 0;
+
+    enemy_hp[0] = 0;
+    enemy_hp[1] = 0;
+    enemy_hp[2] = 0;
+    enemy_hp[3] = 0;
+
+    anim_delay = 0;
+    frame_oam_index = 1;
+    next_frame = 1;
+
+    death_anim_counter[0] = 0;
+    death_anim_counter[1] = 0;
+    death_anim_counter[2] = 0;
+    death_anim_counter[3] = 0;
+}
+
+static inline void add_bullets_to_array()
+{
+    // add bullets to enemies
+    for (u8 i = 0; i < 4; ++i)
+    {
+        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
+
+        if (enemy_hp[i] > 0 && OAM[enemy_oam_index].attr0 && enemy_bullet_delay[i] == ENEMY_BULLET_DELAY)
+        {
+            for (u8 j = 1; j <= 3; ++j)
+            {
+                u8 bullet_oam_index = enemy_oam_index + j;
+
+                if (!OAM[bullet_oam_index].attr0)
+                {
+                    enemy_bullet_index[i] = j;
+                }
+            }
+
+            enemy_bullet_delay[i] = 0;
+        }
+        else
+        {
+            enemy_bullet_delay[i]++;
+        }
+    }
+}
+
+static inline void add_bullets_to_oam()
+{
+    for (u8 i = 0; i < 4; ++i)
+    {
+        if (enemy_bullet_index[i] != 200)
+        {
+            u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
+            u8 bullet_oam_index = enemy_oam_index + enemy_bullet_index[i];
+            u16 en_x = OAM[enemy_oam_index].attr1 & 0x1FF;
+            u8  en_y = OAM[enemy_oam_index].attr0 & 0xFF;
+
+            if (OAM[enemy_oam_index].attr1 & (ATTR1_FLIP_X))
+            {
+                OAM[bullet_oam_index].attr0 = OBJ_Y(en_y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+                OAM[bullet_oam_index].attr1 = OBJ_X(en_x - 8) | ATTR1_SIZE_8 | ATTR1_FLIP_X;
+            }
+            else
+            {
+                OAM[bullet_oam_index].attr0 = OBJ_Y(en_y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+                OAM[bullet_oam_index].attr1 = OBJ_X(en_x + 16) | ATTR1_SIZE_8;
+            }
+
+            OAM[bullet_oam_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(BULLET_OAM_INDEX + 1) | ATTR2_PRIORITY(0);
+
+            enemy_bullet_index[i] = 200;
+        }
+    }
+}
+
+static inline void move_enemy_bullets(s8 scroll_state)
+{
+    for (u8 i = 0; i < 4; ++i)
+    {
+        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
+        for (u8 j = 1; j <= 3; ++j)
+        {
+            u8 bullet_oam_index = enemy_oam_index + j;
+            if (OAM[bullet_oam_index].attr0 || OAM[bullet_oam_index].attr1 || OAM[bullet_oam_index].attr2)
+            {
+                u16 cur_x = OAM[bullet_oam_index].attr1 & 0x1FF;
+
+                if (OAM[bullet_oam_index].attr1 & (ATTR1_FLIP_X))
+                {
+                    OAM[bullet_oam_index].attr1 = OBJ_X(cur_x + scroll_state - BULLET_SPEED) | ATTR1_SIZE_8 | ATTR1_FLIP_X;
+                }
+                else
+                {
+                    OAM[bullet_oam_index].attr1 = OBJ_X(cur_x + scroll_state + BULLET_SPEED) | ATTR1_SIZE_8;
+                }
+            }
+        }
+    }
+}
+
+static inline void clear_extanct_enemies()
+{
+    for (u8 i = 0; i < 4; ++i)
+    {
+        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
+
+        if (OAM[enemy_oam_index].attr0)
+        {
+            u16 cur_x = OAM[enemy_oam_index].attr1 & 0x1FF;
+            u16 flip = OAM[enemy_oam_index].attr1 & ATTR1_FLIP_X;
+
+            if (enemy_hp[i] <= 0) enemy_hp[i] -= 1;
+
+            // check offscreen
+            if ((!flip && (cur_x >= 240 && cur_x < 255) ) || (flip && !cur_x) || enemy_hp[i] <= -55)
+            {
+                death_anim_counter[i] = 0;
+                OAM[enemy_oam_index] = (OBJATTR){ 0, 0, 0 };
+            }
+        }
+    }
+}
+
+static inline void move_enemies(s8 scroll_state)
+{
+    for (u8 i = 0; i < 4; ++i)
+    {
+        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
+
+        if (OAM[enemy_oam_index].attr0)
+        {
+            u8 cur_x = OAM[enemy_oam_index].attr1 & 0x1FF;
+
+            if (enemy_hp[i] > 0)
+            {
+
+                if (OAM[enemy_oam_index].attr1 & ATTR1_FLIP_X)
+                {
+                    OAM[enemy_oam_index].attr1 = OBJ_X(cur_x + scroll_state*2 - 1) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
+                }
+                else
+                {
+                    OAM[enemy_oam_index].attr1 = OBJ_X(cur_x + scroll_state*2 + 1) | ATTR1_SIZE_32;
+                }
+            }
+            else
+            {
+                OAM[enemy_oam_index].attr1 = OBJ_X(cur_x + scroll_state) | ATTR1_SIZE_32;
+            }
+        }
+    }
+}
+
+// needs to be called during vlank
+static void add_enemy_to_oam(u8 _ti, u8 flip, u8 enemy_oam_index)
+{
+    OAM[enemy_oam_index].attr0 = OBJ_Y(112) | ATTR0_COLOR_16 | ATTR0_TALL;
+
+    if (flip) OAM[enemy_oam_index].attr1   = OBJ_X(255) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
+    else  OAM[enemy_oam_index].attr1       = OBJ_X(255) | ATTR1_SIZE_32;
+
+    OAM[enemy_oam_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(_ti) | ATTR2_PRIORITY(1);
+}
+
+static inline u8 boxes_intersect(u8 x0, u8 y0, u8 x1, u8 y1, u8 x2, u8 y2, u8 x3, u8 y3)
+{
+    return ! (
+        x1 <= x2 ||
+        x3 <= x0 ||
+        y1 <= y2 ||
+        y3 <= y0
+    );
+}
+
+u8 check_player_extant(u16 pl_x, u8 pl_y)
+{
+    u8 k = 0;
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+    {
+        u16 en_x = OAM[i].attr1 & 0x1FF;
+        u8  en_y = 112;
+
+        // first check if the player is touching an enemy
+        if (enemy_hp[k] > 0 && pl_x >= en_x && pl_x <= en_x + 16 && pl_y >= en_y && pl_y <= en_y + 32) return 1;
+
+        // then check if the player is touching an enemy bullet
+        for (u8 j = 0; j <= 3; ++j)
+        {
+            u8 bullet_oam_index = i + j;
+            u16 bul_x = (OAM[bullet_oam_index].attr1 & 0x1FF) + 4;
+            u8 bul_y  = (OAM[bullet_oam_index].attr0 & 0xFF) + 4;
+            if (bul_x >= pl_x && bul_x <= pl_x + 16 && bul_y >= pl_y && bul_y <= pl_y + 32) return 1;
+        }
+
+        k++;
+    }
+
+    return 0;
+}
+
+static inline void clear_offscreen_bullets()
+{
+    for (u8 i = 0; i < 4; ++i)
+    {
+        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
+        for (u8 j = 1; j <= 3; ++j)
+        {
+            u8 bullet_oam_index = enemy_oam_index + j;
+            if (OAM[bullet_oam_index].attr0)
+            {
+                u16 cur_x = OAM[bullet_oam_index].attr1 & 0x1FF;
+                if (cur_x == 0 ||  cur_x > 200)
+                {
+                    OAM[bullet_oam_index] = (OBJATTR){ 0, 0, 0 };
+                }
+            }
+        }
+    }
+}
+
+static void add_enemy_before_vblank()
+{
+    if (enemy_delay == ENEMY_DELAY)
+    {
+        u8 k = 0;
+        for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+        {
+            if (!OAM[i].attr0)
+            {
+                next_enemy_index = i;
+                orientation = (rand() > 1073741823); // random bit
+                enemy_hp[k] = 100;
+
+                break;
+            }
+            k++;
+        }
+        enemy_delay = 0;
+    }
+    else
+    {
+        enemy_delay++;
+    }
+}
+
+static void add_enemy_vblank()
+{
+    if (next_enemy_index != 200)
+    {
+        add_enemy_to_oam(1, orientation, next_enemy_index);
+    }
+}
+
+// TODO: FIX u8 / u16 mismatches for the x coordinate inside the code
+static void check_enemy_damage()
+{
+    u8 k = 0;
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+    {
+        u8 en_y = 112; // y coordinate is the same for all enemies
+        u8 en_x = OAM[i].attr1 & 0x1FF;
+
+        for (u8 j = PLAYER_BULLETS_OAM_INDEX; j < PLAYER_BULLETS_OAM_INDEX + PLAYER_MAX_ACTIVE_BULLETS; ++j)
+        {
+            u8 bullet_x = OAM[j].attr1 & 0x1FF;
+            u8 bullet_y = OAM[j].attr0 & 0xFF;
+
+            if (enemy_hp[k] > 0 && bullet_x >= en_x && bullet_x <= en_x + 16 && bullet_y >= en_y && bullet_y <= en_y + 32)
+            {
+                enemy_hp[k] -= 20;
+
+                OAM[j] = (OBJATTR) { 0, 0, 0 };
+            }
+
+        }
+
+        k++;
+    }
+}
+
+static void advance_anim_before_vblank()
+{
+    if (anim_delay == 3)
+    {
+        next_frame = 1 + frame_oam_index*9;
+
+        frame_oam_index++;
+        anim_delay = 0;
+
+        if (frame_oam_index == 9) frame_oam_index = 1;
+    }
+    else
+    {
+        anim_delay++;
+    }
+}
+
+static void advance_anim_vblank(s8 scroll_state)
+{
+    u8 k = 0;
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+    {
+        if (OAM[i].attr1)
+        {
+            if (enemy_hp[k] > 0)
+            {
+                OAM[i].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(next_frame) | ATTR2_PRIORITY(0);
+            }
+            else
+            {
+                u16 x = OAM[i].attr1 & 0x1FF;
+                u8 y  = OAM[i].attr0 & 0xFF;
+
+                OAM[i].attr0 =  OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL;
+                OAM[i].attr1 = OBJ_X(x + scroll_state) | ATTR1_SIZE_32;
+                OAM[i].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(death_anim_sprite[death_anim_counter[k]]) | ATTR2_PRIORITY(0);
+
+                death_anim_counter[k]++; // will be reset to 0 when the enemy is extanct
+            }
+        }
+
+        k++;
+    }
+}
+
+void handle_enemies_before_vblank()
+{
+    clear_offscreen_bullets();
+    clear_extanct_enemies();
+
+    add_enemy_before_vblank();
+    advance_anim_before_vblank();
+
+    // checks for damage due to player's bullets
+
+    //TODO: implement
+    //check_player_damage();
+
+    add_bullets_to_array();
+}
+
+void handle_enemies_vblank(s8 scroll_state)
+{
+    add_enemy_vblank();
+    advance_anim_vblank(scroll_state);
+    check_enemy_damage();
+
+    move_enemies(scroll_state);
+
+    add_bullets_to_oam();
+
+    move_enemy_bullets(scroll_state);
+}
+
+

@@ -1,0 +1,14 @@
+#ifndef ENEMY_AI_H
+#define ENEMY_AI_H
+
+#include <gba.h>
+
+#include "Engine.h"
+
+void reset_enemy_ai();
+void add_enemy_to_oam_next_free_slot(u8 _ti, u8 flip);
+void handle_enemies_before_vblank();
+void handle_enemies_vblank(s8 scroll_state);
+u8 check_player_extant(u16 x, u8 y);
+
+#endif
