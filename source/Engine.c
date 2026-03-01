@@ -70,11 +70,11 @@ static inline void scroll_entire()
     }
 }
 
-static void fade_in()
+void fade_in()
 {
     VBlankIntrWait();
-
-    REG_BLDCNT = 1 | (3 << 6); // set background and blend mode
+    REG_BLDALPHA = 16;
+    REG_BLDCNT = 0x003F | (3 << 6); // set background and blend mode
     REG_BLDY = 16;
 
     for (u8 i = 16*4; i > 0; i--)
@@ -84,26 +84,45 @@ static void fade_in()
     }
 }
 
-static void fade_out()
+void fade_out()
 {
     VBlankIntrWait();
-
-    REG_BLDCNT = 1 | (3 << 6); // set background and blend mode
+    REG_BLDALPHA = 16;
+    REG_BLDCNT = 0x003F | (3 << 6); // set background and blend mode
     REG_BLDY = 0;
 
-    for (u8 i = 0; i < 16*4; i++)
+    for (u8 i = 0; i <= 16*4; i++)
     {
         REG_BLDY = i >> 2;
         VBlankIntrWait();
     }
 }
 
+void black_screen()
+{
+    VBlankIntrWait();
+    REG_BLDALPHA = 16;
+    REG_BLDCNT = 0x003F | (3 << 6); // set background and blend mode
+    REG_BLDY = 16;
+}
+
+void unblack_screen()
+{
+    VBlankIntrWait();
+    REG_BLDALPHA = 16;
+    REG_BLDCNT = 0x003F | (3 << 6); // set background and blend mode
+    REG_BLDY = 0;
+}
+
 void reset_engine(u8 c)
 {
     VBlankIntrWait();
 
-    clear_oam();
-    REG_BLDY = 0;
+    REG_BLDALPHA = 16;
+
+    black_screen();
+
+    clear_screen();
 
     current_lvl = c;
     game_state = GAME_STATE_START;
@@ -119,6 +138,8 @@ void reset_engine(u8 c)
     reset_enemy_ai(current_lvl);
     reset_collisions(current_lvl);
 
+    unblack_screen();
+
     VBlankIntrWait();
 }
 
@@ -127,22 +148,27 @@ static void check_level_progression()
     u16 absolute_x = (window_ofs << 3) + pl_get_x() + 200;
     //AGBPrintInt(absolute_x);
 
-    if (enemies_killed >= 0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
+    if (enemies_killed >= 3 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
     {
         current_lvl++;
         fade_out();
         reset_engine(current_lvl);
+        pl_unhide();
         game_state = GAME_STATE_NORMAL;
         draw_window();
         fade_in();
-
     }
 }
 
 static void tick_state_normal_before_vblank()
 {
     ext_counter = check_player_extant(pl_get_x(), pl_get_y());
-    if (ext_counter) game_state = GAME_STATE_OVER;
+
+    if (0 && ext_counter)
+    {
+        game_state = GAME_STATE_OVER;
+        return;
+    }
 
     // Player stuff
     pl_advance_anim_before_vblank(keys_held);
@@ -160,7 +186,9 @@ static void tick_state_over_vblank()
 {
     VBlankIntrWait();
 
-    clear_oam();
+    fade_out();
+
+    clear_screen();
 
     draw_text_to_oam("SCORE 100", 80, 50, 40);
     draw_text_to_oam("PRESS FIRE TO RESTART", 25, 70, 50);
@@ -174,7 +202,6 @@ static void tick_state_over_vblank()
     } while (!(keys_down & KEY_A));
 
     reset_engine(0);
-    REG_BLDY = 16;
 
     VBlankIntrWait();
 }
@@ -199,7 +226,7 @@ static void tick_state_start_vblank()
 {
     VBlankIntrWait();
 
-    clear_oam();
+    clear_screen();
     //draw_text_to_oam("HAUNTED WALK", 90, 50, 40);
     draw_text_to_oam("PRESS FIRE TO START", 40, 70, 48);
 
@@ -207,22 +234,17 @@ static void tick_state_start_vblank()
     keys_down = keysDown();
     keys_held = keysHeld();
 
-    REG_BLDCNT = 1 | (3 << 6); // set background and blend mode
-    REG_BLDY = 16;
-
     if (keys_down & KEY_A)
     {
+        black_screen();
         clear_oam();
+
         reset_player();
         draw_window();
 
         game_state = GAME_STATE_NORMAL;
-
-        for (u8 i = 16*4; i > 0; i--)
-        {
-            REG_BLDY = i >> 2;
-            VBlankIntrWait();
-        }
+        pl_unhide();
+        fade_in();
     }
 }
 

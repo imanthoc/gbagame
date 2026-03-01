@@ -24,6 +24,8 @@
 #define END_TILEMAP_OFFSET 1
 
 void clear_oam();
+void clear_bg();
+void clear_screen();
 void memcpy_hw(void *dst, const void *src, u16 n);
 
 

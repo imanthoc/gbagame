@@ -1,5 +1,6 @@
 #include "Utilities.h"
 #include "gba.h"
+#include "Map.h"
 
 inline void memcpy_hw(void *dst, const void *src, u16 n)
 {
@@ -20,4 +21,20 @@ inline void clear_oam()
 	{
 		OAM[i] = (OBJATTR) { 0, 0, 0 };
 	}
+}
+
+inline void clear_bg()
+{
+	u16 *scb = screen_block;
+
+    for (u16 i = 0; i < 1024; ++i)
+    {
+        *scb++ = 0;
+    }
+}
+
+inline void clear_screen()
+{
+	clear_oam();
+	clear_bg();
 }

@@ -11,6 +11,9 @@ void pl_handle_player_bullets(u16 keys_held);
 void pl_move_bullets(s8 scroll_state);
 void pl_add_bullet_to_oam();
 
+void pl_hide();
+void pl_unhide();
+
 void pl_set_y();
 void pl_set_y_value(u8 y);
 

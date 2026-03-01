@@ -27,7 +27,7 @@ inline u16 pl_get_x() { return x; }
 void reset_player()
 {
     x = 90;
-    y = 80;
+    y = 112;
 
     counter = 0;
     added_bullet_index = PLAYER_OAM_INDEX + PLAYER_MAX_ACTIVE_BULLETS;
@@ -38,7 +38,7 @@ void reset_player()
 
     bullet_timer = 0;
 
-    OAM[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL;
+    OAM[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL | ATTR0_DISABLED;
     OAM[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
     OAM[PLAYER_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | ATTR2_PRIORITY(0);
 }
@@ -48,6 +48,16 @@ void pl_set_y_value(u8 _y) { y = _y; }
 void pl_set_y()
 {
     OAM[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL;
+}
+
+void pl_hide()
+{
+    OAM[PLAYER_OAM_INDEX].attr0 |= ATTR0_DISABLED;
+}
+
+void pl_unhide()
+{
+    OAM[PLAYER_OAM_INDEX].attr0 &= ~ATTR0_DISABLED;
 }
 
 void pl_advance_anim_before_vblank(u16 keys_held)

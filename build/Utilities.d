@@ -16,7 +16,8 @@ Utilities.o: \
  /opt/devkitpro/libgba/include/gba_sprites.h \
  /opt/devkitpro/libgba/include/gba_systemcalls.h \
  /opt/devkitpro/libgba/include/gba_timers.h \
- /opt/devkitpro/libgba/include/gba_video.h
+ /opt/devkitpro/libgba/include/gba_video.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
@@ -34,3 +35,4 @@ Utilities.o: \
 /opt/devkitpro/libgba/include/gba_systemcalls.h:
 /opt/devkitpro/libgba/include/gba_timers.h:
 /opt/devkitpro/libgba/include/gba_video.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:

@@ -20,7 +20,7 @@
 #define GRIT_LVL1_H
 
 #define LVL_CNT 2
-#define MAX_BLKTL_CNT 10
+#define MAX_BLKTL_CNT 20
 
 ///////////////////////////////////////////////////////////////////////
 #define lvl1TilesLen 5984
@@ -33,8 +33,8 @@ extern const unsigned short lvl1Map[1480];
 extern const unsigned short lvl1Pal[256];
 
 ///////////////////////////////////////////////////////////////////////
-#define lvl2TilesLen 1216
-extern const unsigned int lvl2Tiles[304];
+#define lvl2TilesLen 1120
+extern const unsigned int lvl2Tiles[280];
 
 #define lvl2MapLen 2960
 extern const unsigned short lvl2Map[1480];

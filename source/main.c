@@ -43,6 +43,7 @@ int main(void)
 
     memcpy_hw(SPRITE_GFX + FONT_VRAM_ADDR, glyphTiles, glyphTilesLen);
 
+
     reset_engine(0);
 
     while(1)
