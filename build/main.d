@@ -22,7 +22,7 @@ main.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/main.c \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/font.h \
  /opt/devkitpro/libgba/include/gba_types.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_bitmaps.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/char_bitmaps.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/bullet_bitmap.h
 /opt/devkitpro/libgba/include/gba.h:
@@ -48,6 +48,6 @@ main.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/main.c \
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/font.h:
 /opt/devkitpro/libgba/include/gba_types.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_bitmaps.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/char_bitmaps.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/bullet_bitmap.h:

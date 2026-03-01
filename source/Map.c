@@ -1,17 +1,39 @@
 #include "Map.h"
+
 #include "Utilities.h"
 
 const u16 *tilemap;
+const u16 *pal;
+const unsigned int *tiles;
+
 u16 *screen_block;
 u16 scroll_ofs;
 u8 window_ofs;
 
-void init_lvl(void *scb, const u16 *tl)
+void reset_lvl(void *scb, const u16 *tm, const u16 *pl, const unsigned int *tl, u16 tiles_len)
 {
     screen_block = scb;
     scroll_ofs = 0;
     window_ofs = 0;
-    tilemap = tl;
+
+    tilemap = tm;
+    pal = pl;
+    tiles = tl;
+
+
+    REG_BG0HOFS = 0;
+
+    memcpy_hw(BG_PALETTE, pal, 512);
+	memcpy_hw(CHAR_BASE_BLOCK(0), tiles, tiles_len);
+
+}
+
+void reset_window()
+{
+    scroll_ofs = 0;
+    window_ofs = 0;
+
+    REG_BG0HOFS = 0;
 }
 
 /*
@@ -35,17 +57,10 @@ void draw_window()
     }
 }
 
-void reset_window()
-{
-    scroll_ofs = 0;
-    window_ofs = 0;
 
-    REG_BG0HOFS = 0;
-}
 
 u8 scroll_right()
 {
-
     if (scroll_ofs == 16)
     {
         window_ofs++;

@@ -1,6 +1,5 @@
-Collisions.o: \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.c \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h \
+Player.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.c \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h \
  /opt/devkitpro/libgba/include/gba.h \
  /opt/devkitpro/libgba/include/gba_affine.h \
  /opt/devkitpro/libgba/include/gba_base.h \
@@ -17,10 +16,10 @@ Collisions.o: \
  /opt/devkitpro/libgba/include/gba_systemcalls.h \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h:
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
 /opt/devkitpro/libgba/include/gba_base.h:
@@ -37,6 +36,6 @@ Collisions.o: \
 /opt/devkitpro/libgba/include/gba_systemcalls.h:
 /opt/devkitpro/libgba/include/gba_timers.h:
 /opt/devkitpro/libgba/include/gba_video.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:

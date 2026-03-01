@@ -2,6 +2,7 @@
 
 #include "Enemy_ai.h"
 #include "Utilities.h"
+#include "Map.h"
 #include "agb.h"
 
 // counter for each enemy, when counter[i] == 60, enemy [i] fires
@@ -27,6 +28,8 @@ static u8 anim_delay = 0;
 static u8 frame_oam_index = 1;
 static u8 next_frame = 1;
 
+static u8 current_lvl = 0;
+
 // TODO: fix this stupid animation
 static u8 death_anim_counter[4] = { 0, 0, 0, 0 };
 
@@ -39,15 +42,10 @@ static const u8 death_anim_sprite[60] = {
     81, 81, 81, 81, 81, 89, 89, 89, 89, 89
 };
 
-// TECHNICALLY bit shifts in signed numbers are undefined
-static inline s8 abs_b(s8 x)
+void reset_enemy_ai(u8 l)
 {
-    s8 mask = x >> 7;
-    return (x ^ mask) - mask;
-}
+    current_lvl = l;
 
-void reset_enemy_ai()
-{
     enemy_bullet_delay[0] = 0;
     enemy_bullet_delay[1] = 0;
     enemy_bullet_delay[2] = 0;
@@ -159,8 +157,9 @@ static inline void move_enemy_bullets(s8 scroll_state)
     }
 }
 
-static inline void clear_extanct_enemies()
+static inline u8 clear_extanct_enemies()
 {
+    u8 killed_enemies = 0;
     for (u8 i = 0; i < 4; ++i)
     {
         u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
@@ -170,16 +169,22 @@ static inline void clear_extanct_enemies()
             u16 cur_x = OAM[enemy_oam_index].attr1 & 0x1FF;
             u16 flip = OAM[enemy_oam_index].attr1 & ATTR1_FLIP_X;
 
-            if (enemy_hp[i] <= 0) enemy_hp[i] -= 1;
-
-            // check offscreen
+            if (enemy_hp[i] <= 0)
+            {
+                enemy_hp[i] -= 1;
+            }
+            // check offscreen or health under limit
             if ((!flip && (cur_x >= 240 && cur_x < 255) ) || (flip && !cur_x) || enemy_hp[i] <= -55)
             {
                 death_anim_counter[i] = 0;
                 OAM[enemy_oam_index] = (OBJATTR){ 0, 0, 0 };
+
+                if (enemy_hp[i] <= 55) killed_enemies++;
             }
         }
     }
+
+    return killed_enemies;
 }
 
 static inline void move_enemies(s8 scroll_state)
@@ -210,27 +215,6 @@ static inline void move_enemies(s8 scroll_state)
             }
         }
     }
-}
-
-// needs to be called during vlank
-static void add_enemy_to_oam(u8 _ti, u8 flip, u8 enemy_oam_index)
-{
-    OAM[enemy_oam_index].attr0 = OBJ_Y(112) | ATTR0_COLOR_16 | ATTR0_TALL;
-
-    if (flip) OAM[enemy_oam_index].attr1   = OBJ_X(255) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
-    else  OAM[enemy_oam_index].attr1       = OBJ_X(255) | ATTR1_SIZE_32;
-
-    OAM[enemy_oam_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(_ti) | ATTR2_PRIORITY(1);
-}
-
-static inline u8 boxes_intersect(u8 x0, u8 y0, u8 x1, u8 y1, u8 x2, u8 y2, u8 x3, u8 y3)
-{
-    return ! (
-        x1 <= x2 ||
-        x3 <= x0 ||
-        y1 <= y2 ||
-        y3 <= y0
-    );
 }
 
 u8 check_player_extant(u16 pl_x, u8 pl_y)
@@ -308,7 +292,12 @@ static void add_enemy_vblank()
 {
     if (next_enemy_index != 200)
     {
-        add_enemy_to_oam(1, orientation, next_enemy_index);
+        OAM[next_enemy_index].attr0 = OBJ_Y(112) | ATTR0_COLOR_16 | ATTR0_TALL;
+
+        if (orientation) OAM[next_enemy_index].attr1   = OBJ_X(255) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
+        else  OAM[next_enemy_index].attr1       = OBJ_X(255) | ATTR1_SIZE_32;
+
+        OAM[next_enemy_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | ATTR2_PRIORITY(1);
     }
 }
 
@@ -384,10 +373,10 @@ static void advance_anim_vblank(s8 scroll_state)
     }
 }
 
-void handle_enemies_before_vblank()
+u8 handle_enemies_before_vblank()
 {
     clear_offscreen_bullets();
-    clear_extanct_enemies();
+    u8 k = clear_extanct_enemies();
 
     add_enemy_before_vblank();
     advance_anim_before_vblank();
@@ -398,6 +387,8 @@ void handle_enemies_before_vblank()
     //check_player_damage();
 
     add_bullets_to_array();
+
+    return k; // number of enemies killed by bullets
 }
 
 void handle_enemies_vblank(s8 scroll_state)

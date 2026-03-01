@@ -5,7 +5,7 @@
 
 #include "Map.h"
 
-void reset_engine();
+void reset_engine(u8 current_lvl);
 void tick_before_vblank();
 void tick_vblank();
 
