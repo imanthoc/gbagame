@@ -21,9 +21,4 @@ const unsigned int bullet1Tiles[8] __attribute__((aligned(4))) __attribute__((vi
 	0x00000000,0x00022000,0x00244200,0x02444420,0x02444420,0x00244200,0x00022000,0x00000000,
 };
 
-const unsigned int bullet2Tiles[8] __attribute__((aligned(4))) __attribute__((visibility("hidden")))=
-{
-	0x00000000,0x00044000,0x00422400,0x04222240,0x04222240,0x00422400,0x00044000,0x00000000,
-};
-
 //}}BLOCK(bullet)

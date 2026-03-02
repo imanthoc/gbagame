@@ -22,7 +22,6 @@
 #define bulletTilesLen 32
 
 extern const unsigned int bullet1Tiles[8];
-extern const unsigned int bullet2Tiles[8];
 
 #endif // GRIT_BULLET_H
 

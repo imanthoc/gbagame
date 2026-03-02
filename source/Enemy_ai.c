@@ -5,14 +5,6 @@
 #include "Map.h"
 #include "agb.h"
 
-// counter for each enemy, when counter[i] == 60, enemy [i] fires
-static u8 enemy_bullet_delay[4] = { 0, 0, 0, 0 };
-
-// IF the [i] enemy needs to fire then he will search for an empty OAM spot
-// IF the enemy finds an empty OAM spot, it will be saved in this array before vblank,
-// and during vblank the bullet will be drawn
-static u8 enemy_bullet_index[4] = { 200, 200, 200, 200 };
-
 // OAM index that the next enemy will be stored at, calculated before vlbank and drawn during vblank
 static u8 next_enemy_index = 200;
 // orientation of the next enemy (random)
@@ -46,16 +38,6 @@ void reset_enemy_ai(u8 l)
 {
     current_lvl = l;
 
-    enemy_bullet_delay[0] = 0;
-    enemy_bullet_delay[1] = 0;
-    enemy_bullet_delay[2] = 0;
-    enemy_bullet_delay[3] = 0;
-
-    enemy_bullet_index[0] = 200;
-    enemy_bullet_index[1] = 200;
-    enemy_bullet_index[2] = 200;
-    enemy_bullet_index[3] = 200;
-
     next_enemy_index = 200;
     orientation = 200;
     enemy_delay = 0;
@@ -73,88 +55,6 @@ void reset_enemy_ai(u8 l)
     death_anim_counter[1] = 0;
     death_anim_counter[2] = 0;
     death_anim_counter[3] = 0;
-}
-
-static inline void add_bullets_to_array()
-{
-    // add bullets to enemies
-    for (u8 i = 0; i < 4; ++i)
-    {
-        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
-
-        if (enemy_hp[i] > 0 && OAM[enemy_oam_index].attr0 && enemy_bullet_delay[i] == ENEMY_BULLET_DELAY)
-        {
-            for (u8 j = 1; j <= 3; ++j)
-            {
-                u8 bullet_oam_index = enemy_oam_index + j;
-
-                if (!OAM[bullet_oam_index].attr0)
-                {
-                    enemy_bullet_index[i] = j;
-                }
-            }
-
-            enemy_bullet_delay[i] = 0;
-        }
-        else
-        {
-            enemy_bullet_delay[i]++;
-        }
-    }
-}
-
-static inline void add_bullets_to_oam()
-{
-    for (u8 i = 0; i < 4; ++i)
-    {
-        if (enemy_bullet_index[i] != 200)
-        {
-            u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
-            u8 bullet_oam_index = enemy_oam_index + enemy_bullet_index[i];
-            u16 en_x = OAM[enemy_oam_index].attr1 & 0x1FF;
-            u8  en_y = OAM[enemy_oam_index].attr0 & 0xFF;
-
-            if (OAM[enemy_oam_index].attr1 & (ATTR1_FLIP_X))
-            {
-                OAM[bullet_oam_index].attr0 = OBJ_Y(en_y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-                OAM[bullet_oam_index].attr1 = OBJ_X(en_x - 8) | ATTR1_SIZE_8 | ATTR1_FLIP_X;
-            }
-            else
-            {
-                OAM[bullet_oam_index].attr0 = OBJ_Y(en_y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-                OAM[bullet_oam_index].attr1 = OBJ_X(en_x + 16) | ATTR1_SIZE_8;
-            }
-
-            OAM[bullet_oam_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(BULLET_OAM_INDEX + 1) | ATTR2_PRIORITY(0);
-
-            enemy_bullet_index[i] = 200;
-        }
-    }
-}
-
-static inline void move_enemy_bullets(s8 scroll_state)
-{
-    for (u8 i = 0; i < 4; ++i)
-    {
-        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
-        for (u8 j = 1; j <= 3; ++j)
-        {
-            u8 bullet_oam_index = enemy_oam_index + j;
-            if (OAM[bullet_oam_index].attr0 || OAM[bullet_oam_index].attr1 || OAM[bullet_oam_index].attr2)
-            {
-                u16 cur_x = OAM[bullet_oam_index].attr1 & 0x1FF;
-
-                if (OAM[bullet_oam_index].attr1 & (ATTR1_FLIP_X))
-                {
-                    OAM[bullet_oam_index].attr1 = OBJ_X(cur_x + scroll_state - BULLET_SPEED) | ATTR1_SIZE_8 | ATTR1_FLIP_X;
-                }
-                else
-                {
-                    OAM[bullet_oam_index].attr1 = OBJ_X(cur_x + scroll_state + BULLET_SPEED) | ATTR1_SIZE_8;
-                }
-            }
-        }
-    }
 }
 
 static inline u8 clear_extanct_enemies()
@@ -225,42 +125,13 @@ u8 check_player_extant(u16 pl_x, u8 pl_y)
         u16 en_x = OAM[i].attr1 & 0x1FF;
         u8  en_y = 112;
 
-        // first check if the player is touching an enemy
+        // first check if the player is touching an enemy THAT IS ALLIVE
         if (enemy_hp[k] > 0 && pl_x >= en_x && pl_x <= en_x + 16 && pl_y >= en_y && pl_y <= en_y + 32) return 1;
-
-        // then check if the player is touching an enemy bullet
-        for (u8 j = 0; j <= 3; ++j)
-        {
-            u8 bullet_oam_index = i + j;
-            u16 bul_x = (OAM[bullet_oam_index].attr1 & 0x1FF) + 4;
-            u8 bul_y  = (OAM[bullet_oam_index].attr0 & 0xFF) + 4;
-            if (bul_x >= pl_x && bul_x <= pl_x + 16 && bul_y >= pl_y && bul_y <= pl_y + 32) return 1;
-        }
 
         k++;
     }
 
     return 0;
-}
-
-static inline void clear_offscreen_bullets()
-{
-    for (u8 i = 0; i < 4; ++i)
-    {
-        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
-        for (u8 j = 1; j <= 3; ++j)
-        {
-            u8 bullet_oam_index = enemy_oam_index + j;
-            if (OAM[bullet_oam_index].attr0)
-            {
-                u16 cur_x = OAM[bullet_oam_index].attr1 & 0x1FF;
-                if (cur_x == 0 ||  cur_x > 200)
-                {
-                    OAM[bullet_oam_index] = (OBJATTR){ 0, 0, 0 };
-                }
-            }
-        }
-    }
 }
 
 static void add_enemy_before_vblank()
@@ -375,18 +246,10 @@ static void advance_anim_vblank(s8 scroll_state)
 
 u8 handle_enemies_before_vblank()
 {
-    clear_offscreen_bullets();
     u8 k = clear_extanct_enemies();
 
     add_enemy_before_vblank();
     advance_anim_before_vblank();
-
-    // checks for damage due to player's bullets
-
-    //TODO: implement
-    //check_player_damage();
-
-    add_bullets_to_array();
 
     return k; // number of enemies killed by bullets
 }
@@ -398,10 +261,6 @@ void handle_enemies_vblank(s8 scroll_state)
     check_enemy_damage();
 
     move_enemies(scroll_state);
-
-    add_bullets_to_oam();
-
-    move_enemy_bullets(scroll_state);
 }
 
 

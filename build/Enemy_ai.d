@@ -19,6 +19,7 @@ Enemy_ai.o: \
  /opt/devkitpro/libgba/include/gba_video.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Enemy_ai.h:
@@ -40,5 +41,6 @@ Enemy_ai.o: \
 /opt/devkitpro/libgba/include/gba_video.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:

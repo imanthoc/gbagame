@@ -777,7 +777,7 @@ const unsigned short lvl2Pal[256] __attribute__((aligned(4))) __attribute__((vis
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
 };
 
-const unsigned short lvlBlockingTiles[LVL_CNT][MAX_BLKTL_CNT]  = {
+const unsigned short lvlBlockingTiles[LVL_CNT][BLOCKTILE_CNT]  = {
 	{ 0xAF, 0xB0, 0xB1, 0xB2, 0xBA, 0xB9, 0xB3, 0xB4, 181, 182, 183, 184, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF },
 	{ 31, 32, 33, 34, 24, 25, 26, 27 , 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }
 };
@@ -800,6 +800,15 @@ const unsigned int *tiles_ptr[LVL_CNT] = {
 
 const unsigned short tiles_len[LVL_CNT] = {
 	lvl1TilesLen, lvl2TilesLen
+};
+
+const unsigned short fire_tile_positions[LVL_CNT][FIRETILE_CNT][2] = {
+	{
+		{ 20, 16 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }
+	},
+	{
+		{ 24, 16 }, { 26, 16 }, { 28, 16 }, { 30, 20 }, { 32, 20 }
+	}
 };
 
 //}}BLOCK(lvl1)

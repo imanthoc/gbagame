@@ -17,13 +17,13 @@ Engine.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.c \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Enemy_ai.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/font.h \
  /opt/devkitpro/libgba/include/gba_types.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h:
 /opt/devkitpro/libgba/include/gba.h:
@@ -43,11 +43,11 @@ Engine.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.c \
 /opt/devkitpro/libgba/include/gba_timers.h:
 /opt/devkitpro/libgba/include/gba_video.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Enemy_ai.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/font.h:
 /opt/devkitpro/libgba/include/gba_types.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:

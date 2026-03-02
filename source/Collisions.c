@@ -1,5 +1,7 @@
 #include "Collisions.h"
 #include "level_data.h"
+#include "Player.h"
+#include "Map.h"
 #include "agb.h"
 
 static u8 current_lvl = 0;
@@ -11,7 +13,7 @@ void reset_collisions(u8 c)
 
 static u8 check_nblocking_tiles(u16 t1, u16 t2)
 {
-    for (u8 i = 0; i < MAX_BLKTL_CNT; ++i)
+    for (u8 i = 0; i < BLOCKTILE_CNT; ++i)
     {
         u16 cur_t = lvlBlockingTiles[current_lvl][i];
         if (cur_t == t1 || cur_t == t2) return 0;
@@ -20,12 +22,9 @@ static u8 check_nblocking_tiles(u16 t1, u16 t2)
     return 1;
 }
 
-u8 can_move_left (u16 _x, u8 _y)
+u8 no_collision_left(u16 _x, u8 _y)
 {
     u8 x = _x + scroll_ofs + 1;
-
-    if (window_ofs == 0 && scroll_ofs == 0) return 0;
-
     u8 y1 = _y + 15;
     u8 y2 = _y + 31;
 
@@ -35,9 +34,8 @@ u8 can_move_left (u16 _x, u8 _y)
     return check_nblocking_tiles(screen_block[left_tile1], screen_block[left_tile2]);
 }
 
-u8 can_move_right(u16 _x, u8 _y)
+u8 no_collision_right(u16 _x, u8 _y)
 {
-    //TODO: add a border check
     u8 x = _x + scroll_ofs + 14;
     u8 y1 = _y + 15;
     u8 y2 = _y + 31;

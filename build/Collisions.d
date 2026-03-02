@@ -19,6 +19,7 @@ Collisions.o: \
  /opt/devkitpro/libgba/include/gba_video.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h:
 /opt/devkitpro/libgba/include/gba.h:
@@ -39,4 +40,5 @@ Collisions.o: \
 /opt/devkitpro/libgba/include/gba_video.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:

@@ -1,6 +1,8 @@
 #include "Player.h"
 #include "Collisions.h"
 #include "Utilities.h"
+#include "agb.h"
+#include <stdlib.h>
 
 static u8 anim_delay = 0;
 static u8 frame_oam_index = 1;
@@ -11,6 +13,7 @@ static u16 x;
 static u8 counter;
 static u8 added_bullet_index;
 static u8 bullet_timer = 0;
+static u8 current_lvl = 0;
 
 static const u8 death_anim_sprite[60] = {
     81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
@@ -24,9 +27,15 @@ static const u8 death_anim_sprite[60] = {
 inline u8 pl_get_y() { return y; }
 inline u16 pl_get_x() { return x; }
 
-void reset_player()
+u8 pl_is_centered()
 {
-    x = 90;
+    return x == 110;
+}
+
+void reset_player(u8 c)
+{
+    current_lvl = c;
+    x = 110;
     y = 112;
 
     counter = 0;
@@ -55,9 +64,31 @@ void pl_hide()
     OAM[PLAYER_OAM_INDEX].attr0 |= ATTR0_DISABLED;
 }
 
+u8 pl_can_scroll_left()
+{
+    return x > 0;
+}
+
+u8 pl_can_scroll_right()
+{
+    return x < 224;
+}
+
 void pl_unhide()
 {
     OAM[PLAYER_OAM_INDEX].attr0 &= ~ATTR0_DISABLED;
+}
+
+void pl_scroll_left()
+{
+    x -= 2;
+    OAM[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
+}
+
+void pl_scroll_right()
+{
+    x += 2;
+    OAM[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
 }
 
 void pl_advance_anim_before_vblank(u16 keys_held)

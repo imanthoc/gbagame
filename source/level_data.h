@@ -20,7 +20,8 @@
 #define GRIT_LVL1_H
 
 #define LVL_CNT 2
-#define MAX_BLKTL_CNT 20
+#define BLOCKTILE_CNT 20
+#define FIRETILE_CNT 5
 
 ///////////////////////////////////////////////////////////////////////
 #define lvl1TilesLen 5984
@@ -44,14 +45,17 @@ extern const unsigned short lvl2Pal[256];
 
 ///////////////////////////////////////////////////////////////////////
 
-extern const unsigned short lvlBlockingTiles[LVL_CNT][MAX_BLKTL_CNT];
+extern const unsigned short lvlBlockingTiles[LVL_CNT][BLOCKTILE_CNT];
 extern const unsigned short lvlTrigRegion[LVL_CNT][2];
+
 extern const unsigned short *tilemap_ptr[LVL_CNT];
 
 extern const unsigned short *pal_ptr[LVL_CNT];
 
 extern const unsigned int *tiles_ptr[LVL_CNT];
 extern const unsigned short tiles_len[LVL_CNT];
+
+extern const unsigned short fire_tile_positions[LVL_CNT][FIRETILE_CNT][2];
 
 #endif // GRIT_LVL1_H
 

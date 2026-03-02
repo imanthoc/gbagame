@@ -10,6 +10,12 @@
 #define GAME_STATE_NORMAL 1
 #define GAME_STATE_OVER 3
 
+#define SCROLL_STATE_IDLE 0
+#define SCROLL_STATE_MAP_RIGHT 1
+#define SCROLL_STATE_MAP_LEFT 2
+#define SCROLL_STATE_PL_RIGHT 3
+#define SCROLL_STATE_PL_LEFT 4
+
 #include "agb.h"
 
 static u8 game_state = GAME_STATE_NORMAL;
@@ -19,54 +25,83 @@ static u8 enemies_killed = 0;
 
 static u16 keys_held = 0xFFFF;
 static u16 keys_down = 0xFFFF;
-static s8 scroll_state = 0;
+static s8 scroll_mov_offset = 0;
 
 static u8 current_lvl = 0;
 
-static void draw_text_to_oam(const char *txt, u8 x, u8 y, u8 oam_index)
+static u8 scroll_state; /* 0 = nothing, 1 = map scroll right, 2 = map scroll left, 3 pl scroll right, 4 pl scroll left */
+
+static void move_player_or_map_right()
 {
-    u8 i = oam_index;
-    u8 k = 0;
+    if (!no_collision_right(pl_get_x(), pl_get_y())) return;
 
-    while (*txt)
+    if (map_can_scroll_right() && pl_is_centered())
     {
-        u16 index;
-        if (*txt >= '0' && *txt <= '9')
-        {
-            index = FONT_OAM_INDEX + ((*txt - '0' + 26) << 2);
-        }
-        else
-        {
-            index = FONT_OAM_INDEX + ((*txt - 'A') << 2);
-        }
-
-
-        OAM[i].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-        OAM[i].attr1 = OBJ_X(x + (k << 3) + k) | ATTR1_SIZE_16;
-
-        OAM[i].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(index) | ATTR2_PRIORITY(0);
-
-        i++;
-        k++;
-        txt++;
+        scroll_state = SCROLL_STATE_MAP_RIGHT;
     }
+    else if (pl_can_scroll_right())
+    {
+        scroll_state = SCROLL_STATE_PL_RIGHT;
+    }
+
+    OAM[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
 }
 
-static inline void scroll_entire()
+static void move_player_or_map_left()
 {
-    scroll_state = 0;
+    if (map_can_scroll_left() && pl_is_centered())
+    {
+        scroll_state = SCROLL_STATE_MAP_LEFT;
+    }
+    else if (pl_can_scroll_left())
+    {
+        scroll_state = SCROLL_STATE_PL_LEFT;
+    }
+
+    OAM[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
+}
+
+static inline void scroll_entire_before_vblank()
+{
+    scroll_state = SCROLL_STATE_IDLE;
 
     if (keys_held & KEY_RIGHT)
     {
-        OAM[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
-
-        if (can_move_right(pl_get_x(), pl_get_y()) && !scroll_right()) scroll_state = -1;
+        move_player_or_map_right();
     }
     else if (keys_held & KEY_LEFT)
     {
-        OAM[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
+        move_player_or_map_left();
+    }
+}
 
-        if (can_move_left(pl_get_x(), pl_get_y()) && !scroll_left()) scroll_state = 1;
+void scroll_entire_vblank()
+{
+    scroll_mov_offset = 0;
+
+    switch (scroll_state)
+    {
+        case SCROLL_STATE_MAP_RIGHT:
+        if (!map_scroll_right())
+        {
+            scroll_mov_offset = -1;
+        }
+        break;
+
+        case SCROLL_STATE_PL_RIGHT:
+            pl_scroll_right();
+        break;
+
+        case SCROLL_STATE_MAP_LEFT:
+        if (!map_scroll_left())
+        {
+            scroll_mov_offset = 1;
+        }
+        break;
+
+        case SCROLL_STATE_PL_LEFT:
+            pl_scroll_left();
+        break;
     }
 }
 
@@ -129,12 +164,12 @@ void reset_engine(u8 c)
 
     keys_held = 0xFFFF;
     keys_down = 0xFFFF;
-    scroll_state = 0;
+    scroll_mov_offset = 0;
     ext_counter = 0;
 
-    reset_lvl(SCREEN_BASE_BLOCK(31), tilemap_ptr[current_lvl], pal_ptr[current_lvl], tiles_ptr[current_lvl], tiles_len[current_lvl]);
+    reset_lvl(current_lvl, SCREEN_BASE_BLOCK(31));
     reset_window();
-    reset_player();
+    reset_player(current_lvl);
     reset_enemy_ai(current_lvl);
     reset_collisions(current_lvl);
 
@@ -146,13 +181,13 @@ void reset_engine(u8 c)
 static void check_level_progression()
 {
     u16 absolute_x = (window_ofs << 3) + pl_get_x() + 200;
-    //AGBPrintInt(absolute_x);
 
     if (enemies_killed >= 3 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
     {
         current_lvl++;
         fade_out();
         reset_engine(current_lvl);
+        place_fire_tiles();
         pl_unhide();
         game_state = GAME_STATE_NORMAL;
         draw_window();
@@ -162,13 +197,14 @@ static void check_level_progression()
 
 static void tick_state_normal_before_vblank()
 {
-    ext_counter = check_player_extant(pl_get_x(), pl_get_y());
-
-    if (0 && ext_counter)
+    //if (check_player_extant(pl_get_x() + 8, pl_get_y() + 31) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
+    if (0)
     {
         game_state = GAME_STATE_OVER;
         return;
     }
+
+    scroll_entire_before_vblank();
 
     // Player stuff
     pl_advance_anim_before_vblank(keys_held);
@@ -187,11 +223,7 @@ static void tick_state_over_vblank()
     VBlankIntrWait();
 
     fade_out();
-
     clear_screen();
-
-    draw_text_to_oam("SCORE 100", 80, 50, 40);
-    draw_text_to_oam("PRESS FIRE TO RESTART", 25, 70, 50);
 
     do
     {
@@ -213,13 +245,15 @@ static void tick_state_normal_vblank()
     pl_set_y();
 
     // map scrolling NEEDS to happen during vblank
-    scroll_entire();
+    scroll_entire_vblank();
+
+    advance_fire_anim();
 
     pl_add_bullet_to_oam();
-    pl_move_bullets(scroll_state);
+    pl_move_bullets(scroll_mov_offset);
     pl_advance_anim_vblank();
 
-    handle_enemies_vblank(scroll_state);
+    handle_enemies_vblank(scroll_mov_offset);
 }
 
 static void tick_state_start_vblank()
@@ -227,8 +261,6 @@ static void tick_state_start_vblank()
     VBlankIntrWait();
 
     clear_screen();
-    //draw_text_to_oam("HAUNTED WALK", 90, 50, 40);
-    draw_text_to_oam("PRESS FIRE TO START", 40, 70, 48);
 
     scanKeys();
     keys_down = keysDown();
@@ -239,7 +271,8 @@ static void tick_state_start_vblank()
         black_screen();
         clear_oam();
 
-        reset_player();
+        reset_player(current_lvl);
+        place_fire_tiles();
         draw_window();
 
         game_state = GAME_STATE_NORMAL;

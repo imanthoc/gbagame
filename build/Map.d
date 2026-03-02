@@ -16,6 +16,7 @@ Map.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.c \
  /opt/devkitpro/libgba/include/gba_systemcalls.h \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
 /opt/devkitpro/libgba/include/gba.h:
@@ -34,4 +35,5 @@ Map.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.c \
 /opt/devkitpro/libgba/include/gba_systemcalls.h:
 /opt/devkitpro/libgba/include/gba_timers.h:
 /opt/devkitpro/libgba/include/gba_video.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:
