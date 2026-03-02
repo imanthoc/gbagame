@@ -14,9 +14,8 @@ static u8 enemy_delay = 0;
 
 // self explanatory
 static s8 enemy_hp[4];
-
 // animation counters
-static u8 en_anim_delay;
+static u8 en_anim_delay = 0;
 static u8 frame_oam_index = 1;
 static u8 next_frame = 1;
 
@@ -61,7 +60,7 @@ static u8 clear_extanct_enemies()
 {
     u8 killed_enemies = 0;
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
+    for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
     {
         if (OAM[i].attr0)
         {
@@ -91,7 +90,7 @@ static u8 clear_extanct_enemies()
 static inline void move_enemies(s8 scroll_state)
 {
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
+    for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
     {
         if (OAM[i].attr0)
         {
@@ -121,7 +120,7 @@ static inline void move_enemies(s8 scroll_state)
 u8 check_player_extant(u16 pl_x, u8 pl_y)
 {
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
+    for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
     {
         u16 en_x = OAM[i].attr1 & 0x1FF;
         u8  en_y = 112;
@@ -140,7 +139,7 @@ static void add_enemy_before_vblank()
     if (enemy_delay == ENEMY_DELAY)
     {
         u8 k = 0;
-        for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
+        for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
         {
             if (!OAM[i].attr0)
             {
@@ -179,7 +178,7 @@ static void add_enemy_vblank()
 static void check_enemy_damage()
 {
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
+    for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
     {
         u8 en_y = 112; // y coordinate is the same for all enemies
         u8 en_x = OAM[i].attr1 & 0x1FF;
@@ -217,14 +216,12 @@ static void advance_anim_before_vblank()
     {
         en_anim_delay++;
     }
-
-    AGBPrintInt(en_anim_delay);
 }
 
 static void advance_anim_vblank(s8 scroll_state)
 {
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
+    for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
     {
         if (OAM[i].attr1)
         {
@@ -260,9 +257,9 @@ u8 handle_enemies_before_vblank()
 void handle_enemies_vblank(s8 scroll_state)
 {
     add_enemy_vblank();
-    //advance_anim_vblank(scroll_state);
+    advance_anim_vblank(scroll_state);
 
-    //check_enemy_damage();
+    check_enemy_damage();
 
     move_enemies(scroll_state);
 }

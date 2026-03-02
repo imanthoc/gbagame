@@ -82,14 +82,11 @@ void scroll_entire_vblank()
     switch (scroll_state)
     {
         case SCROLL_STATE_MAP_RIGHT:
-            if (enemies_killed >= 3)
-            {
-                u16 cur_x = OAM[ARROW_TILE_INDEX].attr1 & 0x1FF;
-                OAM[ARROW_TILE_INDEX].attr1 = OBJ_X(cur_x - 2) | ATTR1_SIZE_8;
-            }
-
             if (!map_scroll_right())
             {
+                u16 cur_x = OAM[ARROW_OAM_INDEX].attr1 & 0x1FF;
+                OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x - 2) | ATTR1_SIZE_8;
+
                 scroll_mov_offset = -1;
             }
         break;
@@ -99,14 +96,12 @@ void scroll_entire_vblank()
         break;
 
         case SCROLL_STATE_MAP_LEFT:
-            if (enemies_killed >= 3)
-            {
-                u16 cur_x = OAM[ARROW_TILE_INDEX].attr1 & 0x1FF;
-                OAM[ARROW_TILE_INDEX].attr1 = OBJ_X(cur_x + 2) | ATTR1_SIZE_8;
-            }
-
             if (!map_scroll_left())
             {
+                // maybe generalize on ALL the sprites that need to be scrolled
+                u16 cur_x = OAM[ARROW_OAM_INDEX].attr1 & 0x1FF;
+                OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2) | ATTR1_SIZE_8;
+
                 scroll_mov_offset = 1;
             }
         break;
@@ -196,11 +191,11 @@ static void check_level_progression()
 
     if (enemies_killed >= 3)
     {
-        //if (!OAM[ARROW_OAM_INDEX].attr2)
+        if (!OAM[ARROW_OAM_INDEX].attr2)
         {
-            //OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-            //OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(100) | ATTR1_SIZE_8;
-            //OAM[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
+            OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+            OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl][0] + 320) | ATTR1_SIZE_8;
+            OAM[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
         }
 
         if (0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
@@ -239,6 +234,7 @@ static void tick_state_normal_before_vblank()
     // Enemies stuff
     u8 k = handle_enemies_before_vblank();
     enemies_killed += k;
+
     // lvl stuff
     check_level_progression();
 }
