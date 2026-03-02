@@ -82,10 +82,16 @@ void scroll_entire_vblank()
     switch (scroll_state)
     {
         case SCROLL_STATE_MAP_RIGHT:
-        if (!map_scroll_right())
-        {
-            scroll_mov_offset = -1;
-        }
+            if (enemies_killed >= 3)
+            {
+                u16 cur_x = OAM[ARROW_TILE_INDEX].attr1 & 0x1FF;
+                OAM[ARROW_TILE_INDEX].attr1 = OBJ_X(cur_x - 2) | ATTR1_SIZE_8;
+            }
+
+            if (!map_scroll_right())
+            {
+                scroll_mov_offset = -1;
+            }
         break;
 
         case SCROLL_STATE_PL_RIGHT:
@@ -93,10 +99,16 @@ void scroll_entire_vblank()
         break;
 
         case SCROLL_STATE_MAP_LEFT:
-        if (!map_scroll_left())
-        {
-            scroll_mov_offset = 1;
-        }
+            if (enemies_killed >= 3)
+            {
+                u16 cur_x = OAM[ARROW_TILE_INDEX].attr1 & 0x1FF;
+                OAM[ARROW_TILE_INDEX].attr1 = OBJ_X(cur_x + 2) | ATTR1_SIZE_8;
+            }
+
+            if (!map_scroll_left())
+            {
+                scroll_mov_offset = 1;
+            }
         break;
 
         case SCROLL_STATE_PL_LEFT:
@@ -182,16 +194,29 @@ static void check_level_progression()
 {
     u16 absolute_x = (window_ofs << 3) + pl_get_x() + 200;
 
-    if (enemies_killed >= 3 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
+    if (enemies_killed >= 3)
     {
-        current_lvl++;
-        fade_out();
-        reset_engine(current_lvl);
-        place_fire_tiles();
-        pl_unhide();
-        game_state = GAME_STATE_NORMAL;
-        draw_window();
-        fade_in();
+        //if (!OAM[ARROW_OAM_INDEX].attr2)
+        {
+            //OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+            //OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(100) | ATTR1_SIZE_8;
+            //OAM[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
+        }
+
+        if (0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
+        {
+            current_lvl++;
+
+            fade_out();
+
+            reset_engine(current_lvl);
+            place_fire_tiles();
+            pl_unhide();
+            game_state = GAME_STATE_NORMAL;
+            draw_window();
+
+            fade_in();
+        }
     }
 }
 

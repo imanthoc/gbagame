@@ -43,6 +43,9 @@ extern const unsigned short lvl2Map[1480];
 #define lvl2PalLen 512
 extern const unsigned short lvl2Pal[256];
 
+#define arrowTileLen 32
+extern const unsigned int arrowTile[8];
+
 ///////////////////////////////////////////////////////////////////////
 
 extern const unsigned short lvlBlockingTiles[LVL_CNT][BLOCKTILE_CNT];

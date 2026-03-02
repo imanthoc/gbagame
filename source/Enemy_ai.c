@@ -13,17 +13,17 @@ static u8 orientation = 200;
 static u8 enemy_delay = 0;
 
 // self explanatory
-static s8 enemy_hp[4] = { 0, 0, 0, 0 };
+static s8 enemy_hp[4];
 
 // animation counters
-static u8 anim_delay = 0;
+static u8 en_anim_delay;
 static u8 frame_oam_index = 1;
 static u8 next_frame = 1;
 
 static u8 current_lvl = 0;
 
 // TODO: fix this stupid animation
-static u8 death_anim_counter[4] = { 0, 0, 0, 0 };
+static u8 death_anim_counter[4];
 
 static const u8 death_anim_sprite[60] = {
     81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
@@ -47,7 +47,7 @@ void reset_enemy_ai(u8 l)
     enemy_hp[2] = 0;
     enemy_hp[3] = 0;
 
-    anim_delay = 0;
+    en_anim_delay = 0;
     frame_oam_index = 1;
     next_frame = 1;
 
@@ -57,31 +57,32 @@ void reset_enemy_ai(u8 l)
     death_anim_counter[3] = 0;
 }
 
-static inline u8 clear_extanct_enemies()
+static u8 clear_extanct_enemies()
 {
     u8 killed_enemies = 0;
-    for (u8 i = 0; i < 4; ++i)
+    u8 k = 0;
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
     {
-        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
-
-        if (OAM[enemy_oam_index].attr0)
+        if (OAM[i].attr0)
         {
-            u16 cur_x = OAM[enemy_oam_index].attr1 & 0x1FF;
-            u16 flip = OAM[enemy_oam_index].attr1 & ATTR1_FLIP_X;
+            u16 cur_x = OAM[i].attr1 & 0x1FF;
+            u16 flip  = OAM[i].attr1 & ATTR1_FLIP_X;
 
-            if (enemy_hp[i] <= 0)
+            if (enemy_hp[k] <= 0)
             {
-                enemy_hp[i] -= 1;
+                enemy_hp[k] -= 1;
             }
             // check offscreen or health under limit
-            if ((!flip && (cur_x >= 240 && cur_x < 255) ) || (flip && !cur_x) || enemy_hp[i] <= -55)
+            if ((!flip && (cur_x >= 240 && cur_x < 255) ) || (flip && !cur_x) || enemy_hp[k] <= -55)
             {
-                death_anim_counter[i] = 0;
-                OAM[enemy_oam_index] = (OBJATTR){ 0, 0, 0 };
+                death_anim_counter[k] = 0;
+                OAM[i] = (OBJATTR){ 0, 0, 0 };
 
-                if (enemy_hp[i] <= 55) killed_enemies++;
+                if (enemy_hp[k] <= -55) killed_enemies++;
             }
         }
+
+        k++;
     }
 
     return killed_enemies;
@@ -89,38 +90,38 @@ static inline u8 clear_extanct_enemies()
 
 static inline void move_enemies(s8 scroll_state)
 {
-    for (u8 i = 0; i < 4; ++i)
+    u8 k = 0;
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
     {
-        u8 enemy_oam_index = ENEMY_OAM_INDEX + (i << 2);
-
-        if (OAM[enemy_oam_index].attr0)
+        if (OAM[i].attr0)
         {
-            u8 cur_x = OAM[enemy_oam_index].attr1 & 0x1FF;
+            u8 cur_x = OAM[i].attr1 & 0x1FF;
 
-            if (enemy_hp[i] > 0)
+            if (enemy_hp[k] > 0)
             {
-
-                if (OAM[enemy_oam_index].attr1 & ATTR1_FLIP_X)
+                if (OAM[i].attr1 & ATTR1_FLIP_X)
                 {
-                    OAM[enemy_oam_index].attr1 = OBJ_X(cur_x + scroll_state*2 - 1) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
+                    OAM[i].attr1 = OBJ_X(cur_x + scroll_state*2 - 1) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
                 }
                 else
                 {
-                    OAM[enemy_oam_index].attr1 = OBJ_X(cur_x + scroll_state*2 + 1) | ATTR1_SIZE_32;
+                    OAM[i].attr1 = OBJ_X(cur_x + scroll_state*2 + 1) | ATTR1_SIZE_32;
                 }
             }
             else
             {
-                OAM[enemy_oam_index].attr1 = OBJ_X(cur_x + scroll_state) | ATTR1_SIZE_32;
+                OAM[i].attr1 = OBJ_X(cur_x + scroll_state) | ATTR1_SIZE_32;
             }
         }
+
+        k++;
     }
 }
 
 u8 check_player_extant(u16 pl_x, u8 pl_y)
 {
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
     {
         u16 en_x = OAM[i].attr1 & 0x1FF;
         u8  en_y = 112;
@@ -139,7 +140,7 @@ static void add_enemy_before_vblank()
     if (enemy_delay == ENEMY_DELAY)
     {
         u8 k = 0;
-        for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+        for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
         {
             if (!OAM[i].attr0)
             {
@@ -169,6 +170,8 @@ static void add_enemy_vblank()
         else  OAM[next_enemy_index].attr1       = OBJ_X(255) | ATTR1_SIZE_32;
 
         OAM[next_enemy_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | ATTR2_PRIORITY(1);
+
+        next_enemy_index = 200;
     }
 }
 
@@ -176,7 +179,7 @@ static void add_enemy_vblank()
 static void check_enemy_damage()
 {
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
     {
         u8 en_y = 112; // y coordinate is the same for all enemies
         u8 en_x = OAM[i].attr1 & 0x1FF;
@@ -201,25 +204,27 @@ static void check_enemy_damage()
 
 static void advance_anim_before_vblank()
 {
-    if (anim_delay == 3)
+    if (en_anim_delay == 3)
     {
         next_frame = 1 + frame_oam_index*9;
 
-        frame_oam_index++;
-        anim_delay = 0;
+        if (frame_oam_index == 8) frame_oam_index = 1;
+        else frame_oam_index++;
 
-        if (frame_oam_index == 9) frame_oam_index = 1;
+        en_anim_delay = 0;
     }
     else
     {
-        anim_delay++;
+        en_anim_delay++;
     }
+
+    AGBPrintInt(en_anim_delay);
 }
 
 static void advance_anim_vblank(s8 scroll_state)
 {
     u8 k = 0;
-    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 12; i += 4)
+    for (u8 i = ENEMY_OAM_INDEX; i <= ENEMY_OAM_INDEX + 4; i++)
     {
         if (OAM[i].attr1)
         {
@@ -230,9 +235,7 @@ static void advance_anim_vblank(s8 scroll_state)
             else
             {
                 u16 x = OAM[i].attr1 & 0x1FF;
-                u8 y  = OAM[i].attr0 & 0xFF;
 
-                OAM[i].attr0 =  OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL;
                 OAM[i].attr1 = OBJ_X(x + scroll_state) | ATTR1_SIZE_32;
                 OAM[i].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(death_anim_sprite[death_anim_counter[k]]) | ATTR2_PRIORITY(0);
 
@@ -257,8 +260,9 @@ u8 handle_enemies_before_vblank()
 void handle_enemies_vblank(s8 scroll_state)
 {
     add_enemy_vblank();
-    advance_anim_vblank(scroll_state);
-    check_enemy_damage();
+    //advance_anim_vblank(scroll_state);
+
+    //check_enemy_damage();
 
     move_enemies(scroll_state);
 }

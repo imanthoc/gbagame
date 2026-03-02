@@ -41,6 +41,7 @@ int main(void)
 
     memcpy_hw(SPRITE_GFX + BULLET_VRAM_ADDR, bullet1Tiles, bulletTilesLen);
     memcpy_hw(SPRITE_GFX + FIRE_VRAM_ADDR, fireTiles, fireTilesLen);
+    memcpy_hw(SPRITE_GFX + ARROW_VRAM_ADDR, arrowTile, arrowTileLen);
 
     reset_engine(0);
 

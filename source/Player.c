@@ -2,7 +2,6 @@
 #include "Collisions.h"
 #include "Utilities.h"
 #include "agb.h"
-#include <stdlib.h>
 
 static u8 anim_delay = 0;
 static u8 frame_oam_index = 1;

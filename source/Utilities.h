@@ -3,9 +3,13 @@
 
 #include <gba.h>
 
-#define FIRE_VRAM_ADDR 0x660
+#define ARROW_VRAM_ADDR 0x620
+#define ARROW_OAM_INDEX 103
+#define ARROW_TILE_INDEX 98
+
+#define FIRE_VRAM_ADDR 0x630
 #define FIRE_OAM_INDEX 102
-#define FIRE_TILE_INDEX 103
+#define FIRE_TILE_INDEX 100
 
 #define BULLET_VRAM_ADDR 0x610
 #define BULLET_OAM_INDEX 97
