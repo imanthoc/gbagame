@@ -11,10 +11,12 @@
 #define GAME_STATE_OVER 3
 
 #define SCROLL_STATE_IDLE 0
-#define SCROLL_STATE_MAP_RIGHT 1
-#define SCROLL_STATE_MAP_LEFT 2
-#define SCROLL_STATE_PL_RIGHT 3
-#define SCROLL_STATE_PL_LEFT 4
+#define SCROLL_STATE_MAP_RIGHT -1
+#define SCROLL_STATE_MAP_LEFT 1
+#define SCROLL_STATE_PL_RIGHT -2
+#define SCROLL_STATE_PL_LEFT 2
+
+#define ARROW_ANIM_FRAMES 27
 
 #include "agb.h"
 
@@ -29,7 +31,14 @@ static s8 scroll_mov_offset = 0;
 
 static u8 current_lvl = 0;
 
-static u8 scroll_state; /* 0 = nothing, 1 = map scroll right, 2 = map scroll left, 3 pl scroll right, 4 pl scroll left */
+static s8 scroll_state; /* 0 = nothing, 1 = map scroll right, 2 = map scroll left, 3 pl scroll right, 4 pl scroll left */
+
+static u8 arrow_anim_counter;
+static s8 arrow_anim_y_offset[ARROW_ANIM_FRAMES] = {
+    0, 0, 0, 1, 1, 1, 1, 2, 2,
+    1, 1, 1, 0, 0, 0, -1, -1, -1,
+    -2, -2, -1, -1, -1, -1, 0, 0, 0
+};
 
 static void move_player_or_map_right()
 {
@@ -43,8 +52,6 @@ static void move_player_or_map_right()
     {
         scroll_state = SCROLL_STATE_PL_RIGHT;
     }
-
-    OAM[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
 }
 
 static void move_player_or_map_left()
@@ -57,8 +64,6 @@ static void move_player_or_map_left()
     {
         scroll_state = SCROLL_STATE_PL_LEFT;
     }
-
-    OAM[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
 }
 
 static inline void scroll_entire_before_vblank()
@@ -89,10 +94,12 @@ void scroll_entire_vblank()
 
                 scroll_mov_offset = -1;
             }
+            OAM[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
         break;
 
         case SCROLL_STATE_PL_RIGHT:
             pl_scroll_right();
+            OAM[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
         break;
 
         case SCROLL_STATE_MAP_LEFT:
@@ -104,10 +111,12 @@ void scroll_entire_vblank()
 
                 scroll_mov_offset = 1;
             }
+            OAM[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
         break;
 
         case SCROLL_STATE_PL_LEFT:
             pl_scroll_left();
+            OAM[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
         break;
     }
 }
@@ -173,6 +182,7 @@ void reset_engine(u8 c)
     keys_down = 0xFFFF;
     scroll_mov_offset = 0;
     ext_counter = 0;
+    arrow_anim_counter = 0;
 
     reset_lvl(current_lvl, SCREEN_BASE_BLOCK(31));
     reset_window();
@@ -185,33 +195,23 @@ void reset_engine(u8 c)
     VBlankIntrWait();
 }
 
-static void check_level_progression()
+static void check_level_progression_before_vblank()
 {
     u16 absolute_x = (window_ofs << 3) + pl_get_x() + 200;
 
-    if (enemies_killed >= 3)
+    if (enemies_killed >= 3 && 0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
     {
-        if (!OAM[ARROW_OAM_INDEX].attr2)
-        {
-            OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-            OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl][0] + 320) | ATTR1_SIZE_8;
-            OAM[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
-        }
+        current_lvl++;
 
-        if (0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
-        {
-            current_lvl++;
+        fade_out();
 
-            fade_out();
+        reset_engine(current_lvl);
+        place_fire_tiles();
+        pl_unhide();
+        game_state = GAME_STATE_NORMAL;
+        draw_window();
 
-            reset_engine(current_lvl);
-            place_fire_tiles();
-            pl_unhide();
-            game_state = GAME_STATE_NORMAL;
-            draw_window();
-
-            fade_in();
-        }
+        fade_in();
     }
 }
 
@@ -236,7 +236,36 @@ static void tick_state_normal_before_vblank()
     enemies_killed += k;
 
     // lvl stuff
-    check_level_progression();
+    check_level_progression_before_vblank();
+}
+
+static void handle_progression_arrow()
+{
+
+    if (enemies_killed >= 3)
+    {
+        // add arrow if it hasnt already been added
+        if (!OAM[ARROW_OAM_INDEX].attr0)
+        {
+            OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+            OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl][0] + 320) | ATTR1_SIZE_8;
+            OAM[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
+        }
+        else
+        {
+            // else animate it up and down
+            u8 cur_y = OAM[ARROW_OAM_INDEX].attr0 & 0xFF;
+
+            cur_y += arrow_anim_y_offset[arrow_anim_counter];
+
+            AGBPrintInt(cur_y);
+
+            OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(cur_y) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+
+            if (arrow_anim_counter == ARROW_ANIM_FRAMES-1) arrow_anim_counter = 0;
+            else arrow_anim_counter++;
+        }
+    }
 }
 
 static void tick_state_over_vblank()
@@ -271,10 +300,12 @@ static void tick_state_normal_vblank()
     advance_fire_anim();
 
     pl_add_bullet_to_oam();
-    pl_move_bullets(scroll_mov_offset);
+    pl_move_bullets(scroll_mov_offset, scroll_state);
     pl_advance_anim_vblank();
 
     handle_enemies_vblank(scroll_mov_offset);
+
+    handle_progression_arrow();
 }
 
 static void tick_state_start_vblank()

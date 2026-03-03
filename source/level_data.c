@@ -783,14 +783,14 @@ const unsigned short lvlBlockingTiles[LVL_CNT][BLOCKTILE_CNT]  = {
 };
 
 const unsigned int arrowTile[8] = {
-	0x00444400,
-	0x00444400,
-	0x00444400,
-	0x00444400,
-	0x44444444,
-	0x04444440,
-	0x00444400,
-	0x00044000,
+	0x00111100,
+	0x00144100,
+	0x00144100,
+	0x00144100,
+	0x11444411,
+	0x01444410,
+	0x00144100,
+	0x00011000,
 };
 
 const unsigned short lvlTrigRegion[LVL_CNT][2] = {

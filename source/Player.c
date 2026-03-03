@@ -203,7 +203,7 @@ inline void pl_handle_player_bullets(u16 keys_held)
     }
 }
 
-void pl_move_bullets(s8 scroll_state)
+void pl_move_bullets(s8 scroll_mov_offset, s8 scroll_state)
 {
     u8 oam_bullet_index = PLAYER_OAM_INDEX + 1;
     u8 oam_bullet_limit = oam_bullet_index + PLAYER_MAX_ACTIVE_BULLETS;
@@ -215,7 +215,18 @@ void pl_move_bullets(s8 scroll_state)
             u8 cur_x = OAM[i].attr1 & (0x1FF);
             u16 flip = OAM[i].attr1 & ATTR1_FLIP_X;
 
-            OAM[i].attr1 = OBJ_X(cur_x + scroll_state + (flip? -BULLET_SPEED : BULLET_SPEED)) | ATTR1_SIZE_8 | flip;
+            s8 sp = scroll_mov_offset + ((flip)?-BULLET_SPEED:BULLET_SPEED);
+
+            switch (scroll_state)
+            {
+                case -2: sp++;
+                break;
+
+                case 2: sp--;
+                break;
+            }
+
+            OAM[i].attr1 = OBJ_X(cur_x + sp) | ATTR1_SIZE_8 | flip;
 
             if (cur_x >= 200 || cur_x <= 10)
             {
