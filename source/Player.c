@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Collisions.h"
 #include "Utilities.h"
+#include "Engine.h"
 #include "agb.h"
 
 static u8 anim_delay = 0;
@@ -10,7 +11,6 @@ static u8 y;
     // x is relative to window, not absolute
 static u16 x;
 static u8 counter;
-static u8 added_bullet_index;
 static u8 bullet_timer = 0;
 static u8 current_lvl = 0;
 
@@ -38,7 +38,6 @@ void reset_player(u8 c)
     y = 112;
 
     counter = 0;
-    added_bullet_index = PLAYER_OAM_INDEX + PLAYER_MAX_ACTIVE_BULLETS;
 
     anim_delay = 0;
     frame_oam_index = 1;
@@ -46,21 +45,16 @@ void reset_player(u8 c)
 
     bullet_timer = 0;
 
-    OAM[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL | ATTR0_DISABLED;
-    OAM[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
-    OAM[PLAYER_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | ATTR2_PRIORITY(0);
+    shadow_oam[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL | ATTR0_DISABLED;
+    shadow_oam[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
+    shadow_oam[PLAYER_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | ATTR2_PRIORITY(0);
 }
 
 void pl_set_y_value(u8 _y) { y = _y; }
 
-void pl_set_y()
-{
-    OAM[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL;
-}
-
 void pl_hide()
 {
-    OAM[PLAYER_OAM_INDEX].attr0 |= ATTR0_DISABLED;
+    shadow_oam[PLAYER_OAM_INDEX].attr0 |= ATTR0_DISABLED;
 }
 
 u8 pl_can_scroll_left()
@@ -75,22 +69,22 @@ u8 pl_can_scroll_right()
 
 void pl_unhide()
 {
-    OAM[PLAYER_OAM_INDEX].attr0 &= ~ATTR0_DISABLED;
+    shadow_oam[PLAYER_OAM_INDEX].attr0 &= ~ATTR0_DISABLED;
 }
 
 void pl_scroll_left()
 {
     x -= 2;
-    OAM[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
+    shadow_oam[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
 }
 
 void pl_scroll_right()
 {
     x += 2;
-    OAM[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
+    shadow_oam[PLAYER_OAM_INDEX].attr1 = OBJ_X(x) | ATTR1_SIZE_32;
 }
 
-void pl_advance_anim_before_vblank(u16 keys_held)
+void pl_advance_anim(u16 keys_held)
 {
     if (keys_held & KEY_LEFT || keys_held & KEY_RIGHT)
     {
@@ -112,11 +106,8 @@ void pl_advance_anim_before_vblank(u16 keys_held)
     {
         next_frame = 1;
     }
-}
 
-void pl_advance_anim_vblank()
-{
-    OAM[PLAYER_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(next_frame) | ATTR2_PRIORITY(0);
+    shadow_oam[PLAYER_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(next_frame) | ATTR2_PRIORITY(0);
 }
 
 // Gravity calculations are very heavy and are done before vblank
@@ -151,36 +142,36 @@ void pl_tick_gravity(u8 trigger_jump)
     {
         counter = 0;
     }
+
+    shadow_oam[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL;
 }
 
-inline void pl_add_bullet_to_oam()
-{
-    if (added_bullet_index < PLAYER_OAM_INDEX + PLAYER_MAX_ACTIVE_BULLETS)
-    {
-        if (OAM[PLAYER_OAM_INDEX].attr1 & (ATTR1_FLIP_X))
-        {
-            OAM[added_bullet_index].attr0 = OBJ_Y(y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-            OAM[added_bullet_index].attr1 = OBJ_X(x - 8) | ATTR1_SIZE_8 | ATTR1_FLIP_X;
-        }
-        else
-        {
-            OAM[added_bullet_index].attr0 = OBJ_Y(y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-            OAM[added_bullet_index].attr1 = OBJ_X(x + 16) | ATTR1_SIZE_8;
-        }
-
-        OAM[added_bullet_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(BULLET_OAM_INDEX) | ATTR2_PRIORITY(0);
-    }
-}
-
-static void pl_add_bullet_to_array()
+static void pl_add_bullet()
 {
     //Each character's bullet array is one slot after it's sprite's oam index
     u8 oam_bullet_index = PLAYER_OAM_INDEX + 1;
     u8 oam_bullet_limit = oam_bullet_index + PLAYER_MAX_ACTIVE_BULLETS;
 
-    while(OAM[oam_bullet_index].attr0 != 0 && oam_bullet_index < oam_bullet_limit) oam_bullet_index++;
+    while(shadow_oam[oam_bullet_index].attr0 != 0 && oam_bullet_index < oam_bullet_limit) oam_bullet_index++;
 
-    added_bullet_index = oam_bullet_index;
+    for (u8 i = oam_bullet_index; i < oam_bullet_limit; ++i)
+    {
+        if (!shadow_oam[oam_bullet_index].attr0)
+        {
+            if (shadow_oam[PLAYER_OAM_INDEX].attr1 & (ATTR1_FLIP_X))
+            {
+                shadow_oam[oam_bullet_index].attr0 = OBJ_Y(y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+                shadow_oam[oam_bullet_index].attr1 = OBJ_X(x - 8) | ATTR1_SIZE_8 | ATTR1_FLIP_X;
+            }
+            else
+            {
+                shadow_oam[oam_bullet_index].attr0 = OBJ_Y(y + 10) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+                shadow_oam[oam_bullet_index].attr1 = OBJ_X(x + 16) | ATTR1_SIZE_8;
+            }
+
+            shadow_oam[oam_bullet_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(BULLET_OAM_INDEX) | ATTR2_PRIORITY(0);
+        }
+    }
 }
 
 inline void pl_handle_player_bullets(u16 keys_held)
@@ -189,17 +180,9 @@ inline void pl_handle_player_bullets(u16 keys_held)
     {
         if (bullet_timer++ == BULLET_DELAY)
         {
-            pl_add_bullet_to_array();
+            pl_add_bullet();
             bullet_timer = 0;
         }
-        else
-        {
-            added_bullet_index = PLAYER_OAM_INDEX + PLAYER_MAX_ACTIVE_BULLETS;
-        }
-    }
-    else
-    {
-        added_bullet_index = PLAYER_OAM_INDEX + PLAYER_MAX_ACTIVE_BULLETS;
     }
 }
 
@@ -210,10 +193,10 @@ void pl_move_bullets(s8 scroll_mov_offset, s8 scroll_state)
 
     for (u8 i = oam_bullet_index; i < oam_bullet_limit; ++i)
     {
-        if (OAM[i].attr0)
+        if (shadow_oam[i].attr0)
         {
-            u8 cur_x = OAM[i].attr1 & (0x1FF);
-            u16 flip = OAM[i].attr1 & ATTR1_FLIP_X;
+            u8 cur_x = shadow_oam[i].attr1 & (0x1FF);
+            u16 flip = shadow_oam[i].attr1 & ATTR1_FLIP_X;
 
             s8 sp = scroll_mov_offset + ((flip)?-BULLET_SPEED:BULLET_SPEED);
 
@@ -226,13 +209,13 @@ void pl_move_bullets(s8 scroll_mov_offset, s8 scroll_state)
                 break;
             }
 
-            OAM[i].attr1 = OBJ_X(cur_x + sp) | ATTR1_SIZE_8 | flip;
+            shadow_oam[i].attr1 = OBJ_X(cur_x + sp) | ATTR1_SIZE_8 | flip;
 
             if (cur_x >= 200 || cur_x <= 10)
             {
-                OAM[i].attr0 = 0;
-                OAM[i].attr1 = 0;
-                OAM[i].attr2 = 0;
+                shadow_oam[i].attr0 = 0;
+                shadow_oam[i].attr1 = 0;
+                shadow_oam[i].attr2 = 0;
             }
         }
     }

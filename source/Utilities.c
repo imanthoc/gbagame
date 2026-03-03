@@ -1,4 +1,5 @@
 #include "Utilities.h"
+#include "Engine.h"
 #include "gba.h"
 #include "Map.h"
 
@@ -20,6 +21,7 @@ inline void clear_oam()
 	for (u8 i = 0; i < 128; ++i)
 	{
 		OAM[i] = (OBJATTR) { 0, 0, 0 };
+		shadow_oam[i] = (OBJATTR) { 0, 0, 0 };
 	}
 }
 

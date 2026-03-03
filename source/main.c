@@ -1,5 +1,4 @@
 #include <gba.h>
-#include <gba_sprites.h>
 
 #include "Map.h"
 #include "Engine.h"
@@ -45,12 +44,15 @@ int main(void)
 
     reset_engine(0);
 
+    VBlankIntrWait();
+    copy_shadow_oam();
+
     while(1)
     {
-        tick_before_vblank();
+        tick();
 
         VBlankIntrWait();
 
-        tick_vblank();
+        copy_shadow_oam();
     }
 }

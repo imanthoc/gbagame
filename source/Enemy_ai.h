@@ -7,8 +7,7 @@
 
 void reset_enemy_ai(u8 level_index);
 void add_enemy_to_oam_next_free_slot(u8 _ti, u8 flip);
-u8 handle_enemies_before_vblank();
-void handle_enemies_vblank(s8 scroll_state);
+u8 handle_enemies(s8 scroll_state);
 u8 check_player_extant(u16 x, u8 y);
 
 #endif

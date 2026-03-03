@@ -5,12 +5,14 @@
 
 #include "Map.h"
 
+extern OBJATTR shadow_oam[128];
+
 void reset_engine(u8 current_lvl);
-void tick_before_vblank();
-void tick_vblank();
+void tick();
 void fade_in();
 void fade_out();
 void black_screen();
 void unblack_screen();
+void copy_shadow_oam();
 
 #endif

@@ -6,6 +6,8 @@
 #include "Player.h"
 #include "level_data.h"
 
+OBJATTR shadow_oam[128];
+
 #define GAME_STATE_START 0
 #define GAME_STATE_NORMAL 1
 #define GAME_STATE_OVER 3
@@ -46,10 +48,20 @@ static void move_player_or_map_right()
 
     if (map_can_scroll_right() && pl_is_centered())
     {
-        scroll_state = SCROLL_STATE_MAP_RIGHT;
+        if (!map_scroll_right())
+        {
+            u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
+            shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x - 2) | ATTR1_SIZE_8;
+
+            scroll_mov_offset = -1;
+            scroll_state = SCROLL_STATE_MAP_RIGHT;
+        }
+        shadow_oam[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
     }
     else if (pl_can_scroll_right())
     {
+        pl_scroll_right();
+        shadow_oam[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
         scroll_state = SCROLL_STATE_PL_RIGHT;
     }
 }
@@ -58,17 +70,29 @@ static void move_player_or_map_left()
 {
     if (map_can_scroll_left() && pl_is_centered())
     {
-        scroll_state = SCROLL_STATE_MAP_LEFT;
+        if (!map_scroll_left())
+        {
+            // maybe generalize on ALL the sprites that need to be scrolled
+            u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
+            shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2) | ATTR1_SIZE_8;
+
+            scroll_mov_offset = 1;
+            scroll_state = SCROLL_STATE_MAP_LEFT;
+        }
+        shadow_oam[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
     }
     else if (pl_can_scroll_left())
     {
+        pl_scroll_left();
+        shadow_oam[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
         scroll_state = SCROLL_STATE_PL_LEFT;
     }
 }
 
-static inline void scroll_entire_before_vblank()
+static inline void scroll_entire()
 {
     scroll_state = SCROLL_STATE_IDLE;
+    scroll_mov_offset = 0;
 
     if (keys_held & KEY_RIGHT)
     {
@@ -77,47 +101,6 @@ static inline void scroll_entire_before_vblank()
     else if (keys_held & KEY_LEFT)
     {
         move_player_or_map_left();
-    }
-}
-
-void scroll_entire_vblank()
-{
-    scroll_mov_offset = 0;
-
-    switch (scroll_state)
-    {
-        case SCROLL_STATE_MAP_RIGHT:
-            if (!map_scroll_right())
-            {
-                u16 cur_x = OAM[ARROW_OAM_INDEX].attr1 & 0x1FF;
-                OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x - 2) | ATTR1_SIZE_8;
-
-                scroll_mov_offset = -1;
-            }
-            OAM[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
-        break;
-
-        case SCROLL_STATE_PL_RIGHT:
-            pl_scroll_right();
-            OAM[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
-        break;
-
-        case SCROLL_STATE_MAP_LEFT:
-            if (!map_scroll_left())
-            {
-                // maybe generalize on ALL the sprites that need to be scrolled
-                u16 cur_x = OAM[ARROW_OAM_INDEX].attr1 & 0x1FF;
-                OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2) | ATTR1_SIZE_8;
-
-                scroll_mov_offset = 1;
-            }
-            OAM[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
-        break;
-
-        case SCROLL_STATE_PL_LEFT:
-            pl_scroll_left();
-            OAM[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
-        break;
     }
 }
 
@@ -195,27 +178,50 @@ void reset_engine(u8 c)
     VBlankIntrWait();
 }
 
-static void check_level_progression_before_vblank()
+static void check_level_progression()
 {
     u16 absolute_x = (window_ofs << 3) + pl_get_x() + 200;
 
-    if (enemies_killed >= 3 && 0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
+    if (enemies_killed >= 3)
     {
-        current_lvl++;
+        // add arrow if it hasnt already been added
+        if (!shadow_oam[ARROW_OAM_INDEX].attr0)
+        {
+            shadow_oam[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
+            shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl][0] + 320) | ATTR1_SIZE_8;
+            shadow_oam[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
+        }
+        else
+        {
+            // else animate it up and down
+            u8 cur_y = shadow_oam[ARROW_OAM_INDEX].attr0 & 0xFF;
 
-        fade_out();
+            cur_y += arrow_anim_y_offset[arrow_anim_counter];
 
-        reset_engine(current_lvl);
-        place_fire_tiles();
-        pl_unhide();
-        game_state = GAME_STATE_NORMAL;
-        draw_window();
+            shadow_oam[ARROW_OAM_INDEX].attr0 = OBJ_Y(cur_y) | ATTR0_COLOR_16 | ATTR0_SQUARE;
 
-        fade_in();
+            if (arrow_anim_counter == ARROW_ANIM_FRAMES-1) arrow_anim_counter = 0;
+            else arrow_anim_counter++;
+        }
+
+        if (0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
+        {
+            current_lvl++;
+
+            fade_out();
+
+            reset_engine(current_lvl);
+            place_fire_tiles();
+            pl_unhide();
+            game_state = GAME_STATE_NORMAL;
+            draw_window();
+
+            fade_in();
+        }
     }
 }
 
-static void tick_state_normal_before_vblank()
+static void tick_state_normal()
 {
     //if (check_player_extant(pl_get_x() + 8, pl_get_y() + 31) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
     if (0)
@@ -224,51 +230,23 @@ static void tick_state_normal_before_vblank()
         return;
     }
 
-    scroll_entire_before_vblank();
+    scroll_entire();
 
     // Player stuff
-    pl_advance_anim_before_vblank(keys_held);
     pl_tick_gravity(keys_down & KEY_B);
+    pl_advance_anim(keys_held);
     pl_handle_player_bullets(keys_held); // checks if bullet needs to be added due to input
+    pl_move_bullets(scroll_mov_offset, scroll_state);
 
     // Enemies stuff
-    u8 k = handle_enemies_before_vblank();
-    enemies_killed += k;
+    enemies_killed += handle_enemies(scroll_mov_offset);
 
     // lvl stuff
-    check_level_progression_before_vblank();
+    check_level_progression();
+    advance_fire_anim();
 }
 
-static void handle_progression_arrow()
-{
-
-    if (enemies_killed >= 3)
-    {
-        // add arrow if it hasnt already been added
-        if (!OAM[ARROW_OAM_INDEX].attr0)
-        {
-            OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-            OAM[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl][0] + 320) | ATTR1_SIZE_8;
-            OAM[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
-        }
-        else
-        {
-            // else animate it up and down
-            u8 cur_y = OAM[ARROW_OAM_INDEX].attr0 & 0xFF;
-
-            cur_y += arrow_anim_y_offset[arrow_anim_counter];
-
-            AGBPrintInt(cur_y);
-
-            OAM[ARROW_OAM_INDEX].attr0 = OBJ_Y(cur_y) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-
-            if (arrow_anim_counter == ARROW_ANIM_FRAMES-1) arrow_anim_counter = 0;
-            else arrow_anim_counter++;
-        }
-    }
-}
-
-static void tick_state_over_vblank()
+static void tick_state_over()
 {
     VBlankIntrWait();
 
@@ -288,27 +266,7 @@ static void tick_state_over_vblank()
     VBlankIntrWait();
 }
 
-static void tick_state_normal_vblank()
-{
-    // key state is set before vblank
-    // Move player according to gravity calculated before vblank
-    pl_set_y();
-
-    // map scrolling NEEDS to happen during vblank
-    scroll_entire_vblank();
-
-    advance_fire_anim();
-
-    pl_add_bullet_to_oam();
-    pl_move_bullets(scroll_mov_offset, scroll_state);
-    pl_advance_anim_vblank();
-
-    handle_enemies_vblank(scroll_mov_offset);
-
-    handle_progression_arrow();
-}
-
-static void tick_state_start_vblank()
+static void tick_state_start()
 {
     VBlankIntrWait();
 
@@ -333,7 +291,7 @@ static void tick_state_start_vblank()
     }
 }
 
-void tick_before_vblank()
+void tick()
 {
     scanKeys();
     keys_down = keysDown();
@@ -341,26 +299,21 @@ void tick_before_vblank()
 
     switch (game_state)
     {
+        case GAME_STATE_START:
+            tick_state_start();
+        break;
+
         case GAME_STATE_NORMAL:
-            tick_state_normal_before_vblank();
+            tick_state_normal();
+        break;
+
+        case GAME_STATE_OVER:
+            tick_state_over();
         break;
     }
 }
 
-void tick_vblank()
+void copy_shadow_oam()
 {
-    switch (game_state)
-    {
-        case GAME_STATE_START:
-            tick_state_start_vblank();
-        break;
-
-        case GAME_STATE_NORMAL:
-            tick_state_normal_vblank();
-        break;
-
-        case GAME_STATE_OVER:
-            tick_state_over_vblank();
-        break;
-    }
+    dmaCopy(shadow_oam, OAM, 128 * sizeof(OBJATTR));
 }
