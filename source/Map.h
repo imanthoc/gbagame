@@ -9,11 +9,10 @@
 extern u16 scroll_ofs;
 extern u8 window_ofs;
 extern u16 *screen_block;
-extern u8 lvl_widths[LVL_CNT];
+extern const u8 lvl_widths[LVL_CNT];
 
 void reset_lvl(u8 current_lvl, void *scb);
 
-void place_fire_tiles();
 void advance_fire_anim();
 u8 check_extant_from_fire(u16 x, u8 y);
 

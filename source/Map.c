@@ -14,7 +14,7 @@ u8 window_ofs;
 static u8 current_lvl;
 static u8 fire_anim_counter[FIRETILE_CNT];
 
-u8 lvl_widths[LVL_CNT] = {
+const u8 lvl_widths[LVL_CNT] = {
     84, 84
 };
 
@@ -33,25 +33,19 @@ void reset_lvl(u8 c, void *scb)
 
     for (u8 i = 0; i < FIRETILE_CNT; ++i)
     {
-        fire_anim_counter[i] = 0;
-    }
-
-    memcpy_hw(BG_PALETTE, pal, 512);
-    memcpy_hw(CHAR_BASE_BLOCK(0), tiles, tiles_len[current_lvl]);
-}
-
-void place_fire_tiles()
-{
-    for (u8 i = 0; i < FIRETILE_CNT; ++i)
-    {
         u8 oam_index = FIRE_OAM_INDEX + i;
         u16 y = fire_tile_positions[current_lvl][i][1] << 3;
         u16 x = fire_tile_positions[current_lvl][i][0] << 3;
+
+        fire_anim_counter[i] = 0;
 
         shadow_oam[oam_index].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_SQUARE;
         shadow_oam[oam_index].attr1 = OBJ_X(x) | ATTR1_SIZE_16;
         shadow_oam[oam_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(FIRE_TILE_INDEX) | ATTR2_PRIORITY(1);
     }
+
+    memcpy_hw(BG_PALETTE, pal, 512);
+    memcpy_hw(CHAR_BASE_BLOCK(0), tiles, tiles_len[current_lvl]);
 }
 
 void reset_window()

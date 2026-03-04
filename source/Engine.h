@@ -13,6 +13,7 @@ void fade_in();
 void fade_out();
 void black_screen();
 void unblack_screen();
-void copy_shadow_oam();
+void copy_shadow_oam_dma();
+void copy_shadow_oam_cpu();
 
 #endif

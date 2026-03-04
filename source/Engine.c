@@ -1,4 +1,4 @@
-#include "Engine.h"
+ #include "Engine.h"
 #include "Collisions.h"
 #include "Utilities.h"
 #include "Enemy_ai.h"
@@ -50,17 +50,16 @@ static void move_player_or_map_right()
     {
         if (!map_scroll_right())
         {
-            u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
-            shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x - 2) | ATTR1_SIZE_8;
-
             scroll_mov_offset = -1;
-            scroll_state = SCROLL_STATE_MAP_RIGHT;
         }
+
+        scroll_state = SCROLL_STATE_MAP_RIGHT;
         shadow_oam[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
     }
     else if (pl_can_scroll_right())
     {
         pl_scroll_right();
+
         shadow_oam[PLAYER_OAM_INDEX].attr1 &= ~(ATTR1_FLIP_X);
         scroll_state = SCROLL_STATE_PL_RIGHT;
     }
@@ -72,21 +71,31 @@ static void move_player_or_map_left()
     {
         if (!map_scroll_left())
         {
-            // maybe generalize on ALL the sprites that need to be scrolled
-            u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
-            shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2) | ATTR1_SIZE_8;
-
             scroll_mov_offset = 1;
-            scroll_state = SCROLL_STATE_MAP_LEFT;
         }
+
+        scroll_state = SCROLL_STATE_MAP_LEFT;
         shadow_oam[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
     }
     else if (pl_can_scroll_left())
     {
         pl_scroll_left();
+
         shadow_oam[PLAYER_OAM_INDEX].attr1 |= (ATTR1_FLIP_X);
         scroll_state = SCROLL_STATE_PL_LEFT;
     }
+}
+
+static void scroll_arrow_right()
+{
+    u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
+    shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2*scroll_mov_offset) | ATTR1_SIZE_8;
+}
+
+static void scroll_arrow_left()
+{
+    u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
+    shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2*scroll_mov_offset) | ATTR1_SIZE_8;
 }
 
 static inline void scroll_entire()
@@ -97,10 +106,12 @@ static inline void scroll_entire()
     if (keys_held & KEY_RIGHT)
     {
         move_player_or_map_right();
+        scroll_arrow_right();
     }
     else if (keys_held & KEY_LEFT)
     {
         move_player_or_map_left();
+        scroll_arrow_left();
     }
 }
 
@@ -152,10 +163,6 @@ void reset_engine(u8 c)
 {
     VBlankIntrWait();
 
-    REG_BLDALPHA = 16;
-
-    black_screen();
-
     clear_screen();
 
     current_lvl = c;
@@ -166,6 +173,7 @@ void reset_engine(u8 c)
     scroll_mov_offset = 0;
     ext_counter = 0;
     arrow_anim_counter = 0;
+    enemies_killed = 0;
 
     reset_lvl(current_lvl, SCREEN_BASE_BLOCK(31));
     reset_window();
@@ -173,7 +181,11 @@ void reset_engine(u8 c)
     reset_enemy_ai(current_lvl);
     reset_collisions(current_lvl);
 
-    unblack_screen();
+    // Add hidden arrow sprite
+    shadow_oam[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE | ATTR0_DISABLED;
+    shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl]) | ATTR1_SIZE_8;
+    shadow_oam[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
+
 
     VBlankIntrWait();
 }
@@ -185,11 +197,9 @@ static void check_level_progression()
     if (enemies_killed >= 3)
     {
         // add arrow if it hasnt already been added
-        if (!shadow_oam[ARROW_OAM_INDEX].attr0)
+        if (shadow_oam[ARROW_OAM_INDEX].attr0 & ATTR0_DISABLED)
         {
-            shadow_oam[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-            shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl][0] + 320) | ATTR1_SIZE_8;
-            shadow_oam[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
+            shadow_oam[ARROW_OAM_INDEX].attr0 &= ~(ATTR0_DISABLED);
         }
         else
         {
@@ -204,14 +214,13 @@ static void check_level_progression()
             else arrow_anim_counter++;
         }
 
-        if (0 && absolute_x >= lvlTrigRegion[current_lvl][0] && absolute_x <= lvlTrigRegion[current_lvl][1])
+        if (absolute_x >= lvlTrigRegion[current_lvl] - 2 && absolute_x <= lvlTrigRegion[current_lvl] + 2)
         {
             current_lvl++;
 
             fade_out();
 
             reset_engine(current_lvl);
-            place_fire_tiles();
             pl_unhide();
             game_state = GAME_STATE_NORMAL;
             draw_window();
@@ -261,7 +270,7 @@ static void tick_state_over()
 
     } while (!(keys_down & KEY_A));
 
-    reset_engine(0);
+    reset_engine(current_lvl);
 
     VBlankIntrWait();
 }
@@ -270,8 +279,6 @@ static void tick_state_start()
 {
     VBlankIntrWait();
 
-    clear_screen();
-
     scanKeys();
     keys_down = keysDown();
     keys_held = keysHeld();
@@ -279,12 +286,8 @@ static void tick_state_start()
     if (keys_down & KEY_A)
     {
         black_screen();
-        clear_oam();
-
-        reset_player(current_lvl);
-        place_fire_tiles();
+        reset_engine(current_lvl);
         draw_window();
-
         game_state = GAME_STATE_NORMAL;
         pl_unhide();
         fade_in();
@@ -313,7 +316,15 @@ void tick()
     }
 }
 
-void copy_shadow_oam()
+void copy_shadow_oam_dma()
 {
     dmaCopy(shadow_oam, OAM, 128 * sizeof(OBJATTR));
+}
+
+void copy_shadow_oam_cpu()
+{
+    for (u8 i = 0; i < 128; ++i)
+    {
+        OAM[i] = shadow_oam[i];
+    }
 }

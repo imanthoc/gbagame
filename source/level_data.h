@@ -49,7 +49,7 @@ extern const unsigned int arrowTile[8];
 ///////////////////////////////////////////////////////////////////////
 
 extern const unsigned short lvlBlockingTiles[LVL_CNT][BLOCKTILE_CNT];
-extern const unsigned short lvlTrigRegion[LVL_CNT][2];
+extern const unsigned short lvlTrigRegion[LVL_CNT];
 
 extern const unsigned short *tilemap_ptr[LVL_CNT];
 
