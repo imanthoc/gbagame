@@ -1,4 +1,4 @@
- #include "Engine.h"
+#include "Engine.h"
 #include "Collisions.h"
 #include "Utilities.h"
 #include "Enemy_ai.h"
@@ -192,7 +192,7 @@ void reset_engine(u8 c)
 
 static void check_level_progression()
 {
-    u16 absolute_x = (window_ofs << 3) + pl_get_x() + 200;
+    u16 absolute_x = (window_ofs << 4) + pl_get_x();
 
     if (enemies_killed >= 3)
     {
@@ -214,7 +214,7 @@ static void check_level_progression()
             else arrow_anim_counter++;
         }
 
-        if (absolute_x >= lvlTrigRegion[current_lvl] - 2 && absolute_x <= lvlTrigRegion[current_lvl] + 2)
+        if ((keys_held & KEY_DOWN) && absolute_x >= lvlTrigRegion[current_lvl] - 2 && absolute_x <= lvlTrigRegion[current_lvl] + 2)
         {
             current_lvl++;
 

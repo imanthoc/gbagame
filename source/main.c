@@ -42,6 +42,8 @@ int main(void)
     memcpy_hw(SPRITE_GFX + FIRE_VRAM_ADDR, fireTiles, fireTilesLen);
     memcpy_hw(SPRITE_GFX + ARROW_VRAM_ADDR, arrowTile, arrowTileLen);
 
+    memcpy_hw(SPRITE_GFX + FRAME_J_VRAM_ADDR, frame_jTiles, frame_jTilesLen);
+
     black_screen();
     reset_engine(0);
 

@@ -49,6 +49,8 @@ extern const unsigned int frame_07Tiles[72];
 #define frame_08TilesLen 288
 extern const unsigned int frame_08Tiles[72];
 
+#define frame_jTilesLen 288
+extern const unsigned int frame_jTiles[72];
 
 #define charPalLen 512
 extern const unsigned short charPal[256];

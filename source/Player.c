@@ -86,7 +86,11 @@ void pl_scroll_right()
 
 void pl_advance_anim(u16 keys_held)
 {
-    if (keys_held & KEY_LEFT || keys_held & KEY_RIGHT)
+    if (counter)
+    {
+        next_frame = FRAME_J_TILE_INDEX;
+    }
+    else if (keys_held & KEY_LEFT || keys_held & KEY_RIGHT)
     {
         if (anim_delay == 3)
         {

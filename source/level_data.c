@@ -794,7 +794,7 @@ const unsigned int arrowTile[8] = {
 };
 
 const unsigned short lvlTrigRegion[LVL_CNT]= {
-	500, 300
+	500, 500
 };
 
 const unsigned short *tilemap_ptr[LVL_CNT] = {

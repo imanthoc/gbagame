@@ -3,6 +3,9 @@
 
 #include <gba.h>
 
+#define FRAME_J_VRAM_ADDR 0x770
+#define FRAME_J_TILE_INDEX 120
+
 #define ARROW_VRAM_ADDR 0x620
 #define ARROW_OAM_INDEX 25
 #define ARROW_TILE_INDEX 98
