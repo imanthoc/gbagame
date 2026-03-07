@@ -5,6 +5,7 @@
 #include "font.h"
 #include "Player.h"
 #include "level_data.h"
+#include "sound.h"
 
 OBJATTR shadow_oam[128];
 
@@ -185,9 +186,6 @@ void reset_engine(u8 c)
     shadow_oam[ARROW_OAM_INDEX].attr0 = OBJ_Y(100) | ATTR0_COLOR_16 | ATTR0_SQUARE | ATTR0_DISABLED;
     shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(lvlTrigRegion[current_lvl]) | ATTR1_SIZE_8;
     shadow_oam[ARROW_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ARROW_TILE_INDEX) | ATTR2_PRIORITY(0);
-
-
-    VBlankIntrWait();
 }
 
 static void check_level_progression()
@@ -232,7 +230,7 @@ static void check_level_progression()
 
 static void tick_state_normal()
 {
-    //if (check_player_extant(pl_get_x() + 8, pl_get_y() + 31) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
+    //if (check_extant_from_enemy(pl_get_x() + 8, pl_get_y() + 31) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
     if (0)
     {
         game_state = GAME_STATE_OVER;
@@ -271,8 +269,6 @@ static void tick_state_over()
     } while (!(keys_down & KEY_A));
 
     reset_engine(current_lvl);
-
-    VBlankIntrWait();
 }
 
 static void tick_state_start()
@@ -291,6 +287,7 @@ static void tick_state_start()
         game_state = GAME_STATE_NORMAL;
         pl_unhide();
         fade_in();
+        theme_play();
     }
 }
 
@@ -319,12 +316,4 @@ void tick()
 void copy_shadow_oam_dma()
 {
     dmaCopy(shadow_oam, OAM, 128 * sizeof(OBJATTR));
-}
-
-void copy_shadow_oam_cpu()
-{
-    for (u8 i = 0; i < 128; ++i)
-    {
-        OAM[i] = shadow_oam[i];
-    }
 }

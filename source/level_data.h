@@ -34,15 +34,16 @@ extern const unsigned short lvl1Map[1480];
 extern const unsigned short lvl1Pal[256];
 
 ///////////////////////////////////////////////////////////////////////
-#define lvl2TilesLen 1120
-extern const unsigned int lvl2Tiles[280];
+#define lvl2TilesLen 1344
+extern const unsigned int lvl2Tiles[336];
 
-#define lvl2MapLen 2960
-extern const unsigned short lvl2Map[1480];
+#define lvl2MapLen 7360
+extern const unsigned short lvl2Map[3680];
 
 #define lvl2PalLen 512
 extern const unsigned short lvl2Pal[256];
 
+///////////////////////////////////////////////////////////////////////
 #define arrowTileLen 32
 extern const unsigned int arrowTile[8];
 

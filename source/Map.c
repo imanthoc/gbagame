@@ -14,8 +14,8 @@ u8 window_ofs;
 static u8 current_lvl;
 static u8 fire_anim_counter[FIRETILE_CNT];
 
-const u8 lvl_widths[LVL_CNT] = {
-    84, 84
+const u16 lvl_widths[LVL_CNT] = {
+    74, 184
 };
 
 void reset_lvl(u8 c, void *scb)
@@ -62,16 +62,16 @@ void reset_window()
 void draw_window()
 {
     u16 *scb = screen_block;
-    const u16 *tm = tilemap + (window_ofs << 1);
+    const u16 *tm = tilemap + (window_ofs<<1);
     u8 row_counter = 1;
 
     for (u16 i = 0; i < 640; ++i)
     {
-        *scb++ = tm[i];
+        *scb++ = *tm++;
 
         if (row_counter++ == 32)
         {
-            tm += lvl_widths[current_lvl] >> 1;
+            tm += lvl_widths[current_lvl] - 32;
             row_counter = 1;
         }
     }
@@ -176,10 +176,11 @@ u8 map_scroll_left()
         return 0;
     }
 }
-
+#include "agb.h"
 u8 map_can_scroll_right()
 {
-    return window_ofs < 20;
+    AGBPrintInt(window_ofs);
+    return window_ofs < (lvl_widths[current_lvl] >> 1) - 15;
 }
 u8 map_can_scroll_left()
 {

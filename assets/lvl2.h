@@ -3,14 +3,14 @@
 
 //======================================================================
 //
-//	lvl2, 592x160@4, 
+//	lvl2, 1472x160@4, 
 //	Transparent color : 00,00,00
 //	+ palette 256 entries, not compressed
-//	+ 35 tiles (t|f reduced) not compressed
-//	+ regular map (flat), not compressed, 74x20 
-//	Total size: 512 + 1120 + 2960 = 4592
+//	+ 42 tiles (t|f reduced) not compressed
+//	+ regular map (flat), not compressed, 184x20 
+//	Total size: 512 + 1344 + 7360 = 9216
 //
-//	Time-stamp: 2026-03-01, 19:57:04
+//	Time-stamp: 2026-03-08, 00:46:36
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -19,11 +19,11 @@
 #ifndef GRIT_LVL2_H
 #define GRIT_LVL2_H
 
-#define lvl2TilesLen 1120
-extern const unsigned int lvl2Tiles[280];
+#define lvl2TilesLen 1344
+extern const unsigned int lvl2Tiles[336];
 
-#define lvl2MapLen 2960
-extern const unsigned short lvl2Map[1480];
+#define lvl2MapLen 7360
+extern const unsigned short lvl2Map[3680];
 
 #define lvl2PalLen 512
 extern const unsigned short lvl2Pal[256];

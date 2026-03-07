@@ -9,7 +9,7 @@
 extern u16 scroll_ofs;
 extern u8 window_ofs;
 extern u16 *screen_block;
-extern const u8 lvl_widths[LVL_CNT];
+extern const u16 lvl_widths[LVL_CNT];
 
 void reset_lvl(u8 current_lvl, void *scb);
 

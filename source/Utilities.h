@@ -2,6 +2,7 @@
 #define UTILITIES_H
 
 #include <gba.h>
+#include <gba_sound.h>
 
 #define FRAME_J_VRAM_ADDR 0x770
 #define FRAME_J_TILE_INDEX 120

@@ -85,6 +85,13 @@ static u8 clear_extanct_enemies()
 
 static inline void move_enemies(s8 scroll_state)
 {
+    // speed becomes 1 once every two frames to make enemies slower
+    static u8 speed = 0;
+    if (speed++)
+    {
+        speed = 0;
+    }
+
     u8 k = 0;
     for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
     {
@@ -96,11 +103,11 @@ static inline void move_enemies(s8 scroll_state)
             {
                 if (shadow_oam[i].attr1 & ATTR1_FLIP_X)
                 {
-                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 - 1) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
+                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 - speed) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
                 }
                 else
                 {
-                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 + 1) | ATTR1_SIZE_32;
+                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 + speed) | ATTR1_SIZE_32;
                 }
             }
             else
@@ -113,7 +120,7 @@ static inline void move_enemies(s8 scroll_state)
     }
 }
 
-u8 check_player_extant(u16 pl_x, u8 pl_y)
+u8 check_extant_from_enemy(u16 pl_x, u8 pl_y)
 {
     u8 k = 0;
     for (u8 i = ENEMY_OAM_INDEX; i < ENEMY_OAM_INDEX + 4; i++)
@@ -189,7 +196,7 @@ static void check_enemy_damage()
 
 static void advance_anim(s8 scroll_state)
 {
-    if (en_anim_delay == 3)
+    if (en_anim_delay == 6)
     {
         next_frame = 1 + frame_oam_index*9;
 

@@ -24,6 +24,7 @@ Engine.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.c \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/font.h \
  /opt/devkitpro/libgba/include/gba_types.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h \
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/sound.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h:
 /opt/devkitpro/libgba/include/gba.h:
@@ -50,4 +51,5 @@ Engine.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.c \
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/font.h:
 /opt/devkitpro/libgba/include/gba_types.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h:
+/home/ioannis/gba/gba-examples/graphics/my_demo/source/sound.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:

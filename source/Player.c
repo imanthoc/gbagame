@@ -3,6 +3,7 @@
 #include "Utilities.h"
 #include "Engine.h"
 #include "agb.h"
+#include "sound.h"
 
 static u8 anim_delay = 0;
 static u8 frame_oam_index = 1;
@@ -184,6 +185,7 @@ inline void pl_handle_player_bullets(u16 keys_held)
     {
         if (bullet_timer++ == BULLET_DELAY)
         {
+            shot_play();
             pl_add_bullet();
             bullet_timer = 0;
         }
