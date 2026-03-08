@@ -35,12 +35,10 @@ void reset_lvl(u8 c, void *scb)
     {
         u8 oam_index = FIRE_OAM_INDEX + i;
         u16 y = fire_tile_positions[current_lvl][i][1] << 3;
-        u16 x = fire_tile_positions[current_lvl][i][0] << 3;
 
         fire_anim_counter[i] = 0;
 
-        shadow_oam[oam_index].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_SQUARE;
-        shadow_oam[oam_index].attr1 = OBJ_X(x) | ATTR1_SIZE_16;
+        shadow_oam[oam_index].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_SQUARE | ATTR0_DISABLED;
         shadow_oam[oam_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(FIRE_TILE_INDEX) | ATTR2_PRIORITY(1);
     }
 
@@ -82,13 +80,34 @@ u8 check_extant_from_fire(u16 pl_x, u8 pl_y)
     for (u8 i = 0; i < FIRETILE_CNT; ++i)
     {
         u8 oam_index = FIRE_OAM_INDEX + i;
-        u16 f_y = shadow_oam[oam_index + i].attr0 & 0xFF;
-        u16 f_x = shadow_oam[oam_index + i].attr1 & 0x1FF;
+        u16 f_y = shadow_oam[oam_index].attr0 & 0xFF;
+        u16 f_x = shadow_oam[oam_index].attr1 & 0x1FF;
 
         if (pl_x >= f_x && pl_x <= f_x + 16 && pl_y >= f_y && pl_y <= f_y + 16) return 1;
     }
 
     return 0;
+}
+
+void map_scroll_fire_tiles()
+{
+    for (u8 i = 0; i < FIRETILE_CNT; ++i)
+    {
+        u8 oam_index = FIRE_OAM_INDEX + i;
+        u16 fire_abs_pos = fire_tile_positions[current_lvl][i][0] << 3;
+
+        if (fire_abs_pos >= (window_ofs << 4) && fire_abs_pos <= (window_ofs << 4) + 260)
+        {
+            u16 window_start_pos = (window_ofs << 4) + scroll_ofs;
+
+            shadow_oam[oam_index].attr0 &= ~ATTR0_DISABLED;
+            shadow_oam[oam_index].attr1 = OBJ_X(fire_abs_pos - window_start_pos) | ATTR1_SIZE_16;
+        }
+        else
+        {
+            shadow_oam[oam_index].attr0 |= ATTR0_DISABLED;
+        }
+    }
 }
 
 void advance_fire_anim()
@@ -138,13 +157,6 @@ u8 map_scroll_right()
         scroll_ofs += 2;
         REG_BG0HOFS = scroll_ofs;
 
-        for (u8 i = 0; i < FIRETILE_CNT; ++i)
-        {
-            u8 oam_index = FIRE_OAM_INDEX + i;
-            u16 cur_x = shadow_oam[oam_index].attr1 & 0x1FF;
-            shadow_oam[oam_index].attr1 = OBJ_X(cur_x-2) | ATTR1_SIZE_16;
-        }
-
         return 0;
     }
 }
@@ -166,20 +178,12 @@ u8 map_scroll_left()
         scroll_ofs -= 2;
         REG_BG0HOFS = scroll_ofs;
 
-        for (u8 i = 0; i < FIRETILE_CNT; ++i)
-        {
-            u8 oam_index = FIRE_OAM_INDEX + i;
-            u16 cur_x = shadow_oam[oam_index].attr1 & 0x1FF;
-            shadow_oam[oam_index].attr1 = OBJ_X(cur_x+2) | ATTR1_SIZE_16;
-        }
-
         return 0;
     }
 }
-#include "agb.h"
+
 u8 map_can_scroll_right()
 {
-    AGBPrintInt(window_ofs);
     return window_ofs < (lvl_widths[current_lvl] >> 1) - 15;
 }
 u8 map_can_scroll_left()

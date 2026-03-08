@@ -21,7 +21,7 @@
 
 #define LVL_CNT 2
 #define BLOCKTILE_CNT 20
-#define FIRETILE_CNT 5
+#define FIRETILE_CNT 20
 
 ///////////////////////////////////////////////////////////////////////
 #define lvl1TilesLen 5984

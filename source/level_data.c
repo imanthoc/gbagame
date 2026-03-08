@@ -1094,11 +1094,6 @@ const unsigned short lvl2Pal[256] __attribute__((aligned(4))) __attribute__((vis
 	0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,0x7FFF,
 };
 
-const unsigned short lvlBlockingTiles[LVL_CNT][BLOCKTILE_CNT]  = {
-	{ 0xAF, 0xB0, 0xB1, 0xB2, 0xBA, 0xB9, 0xB3, 0xB4, 181, 182, 183, 184, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF },
-	{ 38, 39, 40, 41, 22, 23, 26, 27 , 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }
-};
-
 const unsigned int arrowTile[8] = {
 	0x00111100,
 	0x00144100,
@@ -1110,8 +1105,13 @@ const unsigned int arrowTile[8] = {
 	0x00011000,
 };
 
+const unsigned short lvlBlockingTiles[LVL_CNT][BLOCKTILE_CNT]  = {
+	{ 0xAF, 0xB0, 0xB1, 0xB2, 0xBA, 0xB9, 0xB3, 0xB4, 181, 182, 183, 184, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF },
+	{ 38, 39, 40, 41, 22, 23, 26, 27 , 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }
+};
+
 const unsigned short lvlTrigRegion[LVL_CNT]= {
-	500, 500
+	500, 1324
 };
 
 const unsigned short *tilemap_ptr[LVL_CNT] = {
@@ -1132,10 +1132,16 @@ const unsigned short tiles_len[LVL_CNT] = {
 
 const unsigned short fire_tile_positions[LVL_CNT][FIRETILE_CNT][2] = {
 	{
-		{ 20, 16 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }
+		{ 20, 16 }, { 21, 16 }, { 25, 16 }, { 26, 16 }, { 27, 16 },
+		{ 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 },
+		{ 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 },
+		{ 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }
 	},
 	{
-		{ 24, 16 }, { 26, 16 }, { 28, 16 }, { 30, 20 }, { 32, 20 }
+		{ 24, 16 }, { 26, 16 }, { 28, 16 }, { 30, 20 }, { 32, 20 },
+		{ 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 },
+		{ 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 },
+		{ 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }, { 20, 20 }
 	}
 };
 

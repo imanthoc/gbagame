@@ -18,8 +18,7 @@ Map.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.c \
  /opt/devkitpro/libgba/include/gba_video.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
  /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h
+ /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
@@ -40,4 +39,3 @@ Map.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.c \
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:
 /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:

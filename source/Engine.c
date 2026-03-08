@@ -32,6 +32,7 @@ static u16 keys_held = 0xFFFF;
 static u16 keys_down = 0xFFFF;
 static s8 scroll_mov_offset = 0;
 
+static u16 arrow_abs_pos;
 static u8 current_lvl = 0;
 
 static s8 scroll_state; /* 0 = nothing, 1 = map scroll right, 2 = map scroll left, 3 pl scroll right, 4 pl scroll left */
@@ -87,16 +88,19 @@ static void move_player_or_map_left()
     }
 }
 
-static void scroll_arrow_right()
+static void scroll_arrow()
 {
-    u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
-    shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2*scroll_mov_offset) | ATTR1_SIZE_8;
-}
+    if (arrow_abs_pos >= (window_ofs << 4) && arrow_abs_pos <= (window_ofs << 4) + 260)
+    {
+        u16 window_start_pos = (window_ofs << 4) + scroll_ofs;
 
-static void scroll_arrow_left()
-{
-    u16 cur_x = shadow_oam[ARROW_OAM_INDEX].attr1 & 0x1FF;
-    shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(cur_x + 2*scroll_mov_offset) | ATTR1_SIZE_8;
+        shadow_oam[ARROW_OAM_INDEX].attr0 &= ~ATTR0_DISABLED;
+        shadow_oam[ARROW_OAM_INDEX].attr1 = OBJ_X(arrow_abs_pos - window_start_pos) | ATTR1_SIZE_8;
+    }
+    else
+    {
+        shadow_oam[ARROW_OAM_INDEX].attr0 |= ATTR0_DISABLED;
+    }
 }
 
 static inline void scroll_entire()
@@ -104,15 +108,15 @@ static inline void scroll_entire()
     scroll_state = SCROLL_STATE_IDLE;
     scroll_mov_offset = 0;
 
+    scroll_arrow();
+    map_scroll_fire_tiles();
     if (keys_held & KEY_RIGHT)
     {
         move_player_or_map_right();
-        scroll_arrow_right();
     }
     else if (keys_held & KEY_LEFT)
     {
         move_player_or_map_left();
-        scroll_arrow_left();
     }
 }
 
@@ -175,6 +179,7 @@ void reset_engine(u8 c)
     ext_counter = 0;
     arrow_anim_counter = 0;
     enemies_killed = 0;
+    arrow_abs_pos = lvlTrigRegion[current_lvl];
 
     reset_lvl(current_lvl, SCREEN_BASE_BLOCK(31));
     reset_window();
@@ -230,8 +235,8 @@ static void check_level_progression()
 
 static void tick_state_normal()
 {
-    //if (check_extant_from_enemy(pl_get_x() + 8, pl_get_y() + 31) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
-    if (0)
+    if (/*check_extant_from_enemy(pl_get_x() + 8, pl_get_y() + 31) || */check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
+
     {
         game_state = GAME_STATE_OVER;
         return;

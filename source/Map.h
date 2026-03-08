@@ -20,6 +20,8 @@ void reset_window();
 void draw_window();
 void draw_end_window();
 
+void map_scroll_fire_tiles();
+
 u8 map_can_scroll_right();
 u8 map_can_scroll_left();
 
