@@ -103,11 +103,11 @@ static inline void move_enemies(s8 scroll_state)
             {
                 if (shadow_oam[i].attr1 & ATTR1_FLIP_X)
                 {
-                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 - speed) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
+                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 - 1) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
                 }
                 else
                 {
-                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 + speed) | ATTR1_SIZE_32;
+                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 + 1) | ATTR1_SIZE_32;
                 }
             }
             else
@@ -196,7 +196,7 @@ static void check_enemy_damage()
 
 static void advance_anim(s8 scroll_state)
 {
-    if (en_anim_delay == 6)
+    if (en_anim_delay == 3)
     {
         next_frame = 1 + frame_oam_index*9;
 

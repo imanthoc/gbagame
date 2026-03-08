@@ -7,6 +7,7 @@ void init_sound();
 void sound_irq();
 
 void shot_play();
+void theme_stop();
 void theme_play();
 
 #endif

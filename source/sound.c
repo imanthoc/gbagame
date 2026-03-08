@@ -8,6 +8,9 @@
 #include "shot.h"
 #include "agb.h"
 
+static u16 theme_counter = 0;
+static u8 bullet_counter = 0;
+
 void init_sound()
 {
     SNDSTAT = SNDSTAT_ENABLE;
@@ -30,6 +33,7 @@ void init_sound()
 
 void theme_play()
 {
+    theme_counter = 0;
     // stop DMA
     REG_DMA1CNT = 0;
 
@@ -48,6 +52,16 @@ void theme_play()
                     DMA16 |
                     DMA_SPECIAL |
                     DMA_ENABLE;
+}
+
+void theme_stop()
+{
+    theme_counter = 0;
+    // stop DMA
+    REG_DMA1CNT = 0;
+
+    // stop timer
+    REG_TM0CNT = 0;
 }
 
 void shot_play()
@@ -80,10 +94,7 @@ void shot_stop()
 
 void sound_irq()
 {
-    static u16 theme_counter = 0;
-    static u8 bullet_counter = 0;
-
-    if (theme_counter++ == THEME_FRAMES-15)
+    if (theme_counter++ == THEME_FRAMES - 12)
     {
         theme_play();
         theme_counter = 0;

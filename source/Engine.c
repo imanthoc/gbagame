@@ -69,6 +69,8 @@ static void move_player_or_map_right()
 
 static void move_player_or_map_left()
 {
+    if (!no_collision_left(pl_get_x(), pl_get_y())) return;
+
     if (map_can_scroll_left() && pl_is_centered())
     {
         if (!map_scroll_left())
@@ -235,8 +237,7 @@ static void check_level_progression()
 
 static void tick_state_normal()
 {
-    if (/*check_extant_from_enemy(pl_get_x() + 8, pl_get_y() + 31) || */check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
-
+    if (check_extant_from_enemy(pl_get_x() + 8, pl_get_y() + 25) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
     {
         game_state = GAME_STATE_OVER;
         return;
@@ -264,6 +265,7 @@ static void tick_state_over()
 
     fade_out();
     clear_screen();
+    theme_stop();
 
     do
     {
