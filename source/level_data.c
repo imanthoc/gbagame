@@ -1096,12 +1096,12 @@ const unsigned short lvl2Pal[256] __attribute__((aligned(4))) __attribute__((vis
 
 const unsigned int arrowTile[8] = {
 	0x00111100,
-	0x00144100,
-	0x00144100,
-	0x00144100,
-	0x11444411,
-	0x01444410,
-	0x00144100,
+	0x00122100,
+	0x00122100,
+	0x00122100,
+	0x11222211,
+	0x01222210,
+	0x00122100,
 	0x00011000,
 };
 

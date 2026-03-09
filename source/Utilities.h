@@ -4,6 +4,9 @@
 #include <gba.h>
 #include <gba_sound.h>
 
+#define MONSTER_VRAM_ADDR 0x800
+#define ENEMY_TILE_INDEX 129
+
 #define FRAME_J_VRAM_ADDR 0x770
 #define FRAME_J_TILE_INDEX 120
 

@@ -6,6 +6,7 @@
 #include "Map.h"
 #include "agb.h"
 
+#define ENEMY_DEATH_ANIM_FRAMES 60
 
 // delay counter for the next enemy to be spawned
 static u8 enemy_delay = 0;
@@ -14,7 +15,6 @@ static u8 enemy_delay = 0;
 static s8 enemy_hp[4];
 // animation counters
 static u8 en_anim_delay = 0;
-static u8 frame_oam_index = 1;
 static u8 next_frame = 1;
 
 static u8 current_lvl = 0;
@@ -22,13 +22,13 @@ static u8 current_lvl = 0;
 // TODO: fix this stupid animation
 static u8 death_anim_counter[4];
 
-static const u8 death_anim_sprite[60] = {
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89
+static const u16 death_anim_sprite[ENEMY_DEATH_ANIM_FRAMES] = {
+    192, 192, 192, 192, 192, 192, 192, 192, 192, 192,
+    192, 192, 192, 192, 192, 192, 192, 192, 192, 192,
+    201, 201, 201, 201, 201, 201, 201, 201, 201, 201,
+    201, 201, 201, 201, 201, 201, 201, 201, 201, 201,
+    210, 210, 210, 210, 210, 210, 210, 210, 210, 210,
+    210, 210, 210, 210, 210, 210, 210, 210, 210, 210
 };
 
 void reset_enemy_ai(u8 l)
@@ -43,7 +43,6 @@ void reset_enemy_ai(u8 l)
     enemy_hp[3] = 0;
 
     en_anim_delay = 0;
-    frame_oam_index = 1;
     next_frame = 1;
 
     death_anim_counter[0] = 0;
@@ -68,12 +67,12 @@ static u8 clear_extanct_enemies()
                 enemy_hp[k] -= 1;
             }
             // check offscreen or health under limit
-            if ((!flip && (cur_x >= 240 && cur_x < 255) ) || (flip && !cur_x) || enemy_hp[k] <= -55)
+            if ((!flip && (cur_x >= 240 && cur_x < 255) ) || (flip && !cur_x) || enemy_hp[k] <= -59)
             {
                 death_anim_counter[k] = 0;
                 shadow_oam[i] = (OBJATTR){ 0, 0, 0 };
 
-                if (enemy_hp[k] <= -55) killed_enemies++;
+                if (enemy_hp[k] <= -59) killed_enemies++;
             }
         }
 
@@ -98,21 +97,15 @@ static inline void move_enemies(s8 scroll_state)
         if (shadow_oam[i].attr0)
         {
             u8 cur_x = shadow_oam[i].attr1 & 0x1FF;
+            u16 flip = shadow_oam[i].attr1 & ATTR1_FLIP_X;
 
             if (enemy_hp[k] > 0)
             {
-                if (shadow_oam[i].attr1 & ATTR1_FLIP_X)
-                {
-                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 - 1) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
-                }
-                else
-                {
-                    shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 + 1) | ATTR1_SIZE_32;
-                }
+                shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2 + ((flip)?-speed:+speed)) | ATTR1_SIZE_32 | flip;
             }
             else
             {
-                shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state) | ATTR1_SIZE_32;
+                shadow_oam[i].attr1 = OBJ_X(cur_x + scroll_state*2) | ATTR1_SIZE_32 | flip;
             }
         }
 
@@ -153,7 +146,7 @@ static void add_enemy()
                 if (rand() > 1073741823) shadow_oam[i].attr1 = OBJ_X(255) | ATTR1_SIZE_32 | ATTR1_FLIP_X;
                 else  shadow_oam[i].attr1 = OBJ_X(255) | ATTR1_SIZE_32;
 
-                shadow_oam[i].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(1) | ATTR2_PRIORITY(1);
+                shadow_oam[i].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(ENEMY_TILE_INDEX) | ATTR2_PRIORITY(1);
 
                 break;
             }
@@ -196,11 +189,13 @@ static void check_enemy_damage()
 
 static void advance_anim(s8 scroll_state)
 {
-    if (en_anim_delay == 3)
-    {
-        next_frame = 1 + frame_oam_index*9;
+    static  u8 frame_oam_index = 1;
 
-        if (frame_oam_index == 8) frame_oam_index = 1;
+    if (en_anim_delay == 6)
+    {
+        next_frame = ENEMY_TILE_INDEX + frame_oam_index*9;
+
+        if (frame_oam_index == 7) frame_oam_index = 1;
         else frame_oam_index++;
 
         en_anim_delay = 0;
@@ -221,9 +216,6 @@ static void advance_anim(s8 scroll_state)
             }
             else
             {
-                u16 x = shadow_oam[i].attr1 & 0x1FF;
-
-                shadow_oam[i].attr1 = OBJ_X(x + scroll_state) | ATTR1_SIZE_32;
                 shadow_oam[i].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(death_anim_sprite[death_anim_counter[k]]) | ATTR2_PRIORITY(0);
 
                 death_anim_counter[k]++; // will be reset to 0 when the enemy is extanct
