@@ -19,9 +19,6 @@
 #ifndef GRIT_CHAR_H
 #define GRIT_CHAR_H
 
-#define extTilesLen 512
-extern const unsigned int extTiles[128];
-
 #define frame_00TilesLen 288
 extern const unsigned int frame_00Tiles[72];
 
@@ -54,6 +51,9 @@ extern const unsigned int frame_jTiles[72];
 
 #define charPalLen 512
 extern const unsigned short charPal[256];
+
+#define batTilesLen 256
+extern const unsigned int batTiles[64];
 
 #endif // GRIT_CHAR_H
 

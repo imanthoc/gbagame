@@ -174,7 +174,7 @@ static void pl_add_bullet()
                 shadow_oam[oam_bullet_index].attr1 = OBJ_X(x + 16) | ATTR1_SIZE_8;
             }
 
-            shadow_oam[oam_bullet_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(BULLET_OAM_INDEX) | ATTR2_PRIORITY(0);
+            shadow_oam[oam_bullet_index].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(BULLET_TILE_INDEX) | ATTR2_PRIORITY(0);
         }
     }
 }
