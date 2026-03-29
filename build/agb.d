@@ -1,4 +1,4 @@
-agb.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.c \
+agb.o: /home/ioannis/gba/gba-examples/graphics/gbagame/source/agb.c \
  /opt/devkitpro/libgba/include/gba.h \
  /opt/devkitpro/libgba/include/gba_affine.h \
  /opt/devkitpro/libgba/include/gba_base.h \

@@ -31,6 +31,7 @@ int main(void)
     REG_BG0HOFS = 0;
 
     memcpy_hw(SPRITE_PALETTE, charPal, charPalLen);
+    memcpy_hw(SPRITE_PALETTE + 16, bossPal, bossPalLen);
 
     memcpy_hw(SPRITE_GFX,         frame_00Tiles, frame_00TilesLen);
     memcpy_hw(SPRITE_GFX + 144,   frame_01Tiles, frame_01TilesLen);
@@ -58,10 +59,10 @@ int main(void)
     memcpy_hw(SPRITE_GFX + MONSTER_VRAM_ADDR + 144*8, monster_frame_0008Tiles, monster_frame_0008TilesLen);
     memcpy_hw(SPRITE_GFX + MONSTER_VRAM_ADDR + 144*9, monster_frame_0009Tiles, monster_frame_0009TilesLen);
 
-    memcpy_hw(SPRITE_GFX + BAT_VRAM_ADDR, batTiles, batTilesLen);
+    memcpy_hw(SPRITE_GFX + BOSS_VRAM_ADDR, bossTiles, bossTilesLen);
 
     black_screen();
-    reset_engine(0);
+    reset_engine(2);
     copy_shadow_oam_dma();
     while(1)
     {

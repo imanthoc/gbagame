@@ -8,21 +8,12 @@
 static u8 anim_delay = 0;
 static u8 frame_oam_index = 1;
 static u8 next_frame = 1;
-static u8 y;
+static s8 y;
     // x is relative to window, not absolute
 static u16 x;
 static u8 counter;
 static u8 bullet_timer = 0;
 static u8 current_lvl = 0;
-
-static const u8 death_anim_sprite[60] = {
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89,
-    81, 81, 81, 81, 81, 89, 89, 89, 89, 89
-};
 
 inline u8 pl_get_y() { return y; }
 inline u16 pl_get_x() { return x; }
@@ -115,7 +106,6 @@ void pl_advance_anim(u16 keys_held)
     shadow_oam[PLAYER_OAM_INDEX].attr2 = ATTR2_PALETTE(0) | OBJ_CHAR(next_frame) | ATTR2_PRIORITY(0);
 }
 
-// Gravity calculations are very heavy and are done before vblank
 void pl_tick_gravity(u8 trigger_jump)
 {
     u8 cm = can_move_down(x,  y);
@@ -147,7 +137,7 @@ void pl_tick_gravity(u8 trigger_jump)
     {
         counter = 0;
     }
-
+    if (y < 0) y = 0;
     shadow_oam[PLAYER_OAM_INDEX].attr0 = OBJ_Y(y) | ATTR0_COLOR_16 | ATTR0_TALL;
 }
 

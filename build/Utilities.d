@@ -1,7 +1,7 @@
 Utilities.o: \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.c \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Utilities.c \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Utilities.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/level_data.h \
  /opt/devkitpro/libgba/include/gba.h \
  /opt/devkitpro/libgba/include/gba_affine.h \
  /opt/devkitpro/libgba/include/gba_base.h \
@@ -18,10 +18,10 @@ Utilities.o: \
  /opt/devkitpro/libgba/include/gba_systemcalls.h \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Engine.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Map.h
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Utilities.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/level_data.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
 /opt/devkitpro/libgba/include/gba_base.h:
@@ -38,5 +38,5 @@ Utilities.o: \
 /opt/devkitpro/libgba/include/gba_systemcalls.h:
 /opt/devkitpro/libgba/include/gba_timers.h:
 /opt/devkitpro/libgba/include/gba_video.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Engine.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Map.h:

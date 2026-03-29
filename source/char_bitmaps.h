@@ -55,6 +55,13 @@ extern const unsigned short charPal[256];
 #define batTilesLen 256
 extern const unsigned int batTiles[64];
 
+#define bossTilesLen 2048
+extern const unsigned int bossTiles[512];
+
+#define bossPalLen 512
+extern const unsigned short bossPal[256];
+
+
 #endif // GRIT_CHAR_H
 
 //}}BLOCK(char)

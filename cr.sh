@@ -1,3 +1,3 @@
 #!/bin/bash
 
-make clean && make && visualboyadvance-m my_demo.gba
+make clean && make && visualboyadvance-m gbagame.gba

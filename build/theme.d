@@ -1,1 +1,1 @@
-theme.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/theme.c
+theme.o: /home/ioannis/gba/gba-examples/graphics/gbagame/source/theme.c

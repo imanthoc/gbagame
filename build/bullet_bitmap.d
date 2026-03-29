@@ -1,2 +1,2 @@
 bullet_bitmap.o: \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/bullet_bitmap.c
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/bullet_bitmap.c

@@ -1,1 +1,1 @@
-shot.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/shot.c
+shot.o: /home/ioannis/gba/gba-examples/graphics/gbagame/source/shot.c

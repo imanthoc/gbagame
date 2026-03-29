@@ -1,5 +1,5 @@
-Player.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.c \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h \
+Player.o: /home/ioannis/gba/gba-examples/graphics/gbagame/source/Player.c \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Player.h \
  /opt/devkitpro/libgba/include/gba.h \
  /opt/devkitpro/libgba/include/gba_affine.h \
  /opt/devkitpro/libgba/include/gba_base.h \
@@ -16,14 +16,14 @@ Player.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.c \
  /opt/devkitpro/libgba/include/gba_systemcalls.h \
  /opt/devkitpro/libgba/include/gba_timers.h \
  /opt/devkitpro/libgba/include/gba_video.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h \
- /home/ioannis/gba/gba-examples/graphics/my_demo/source/sound.h
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.h:
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Collisions.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Map.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/level_data.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Utilities.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/Engine.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/agb.h \
+ /home/ioannis/gba/gba-examples/graphics/gbagame/source/sound.h
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Player.h:
 /opt/devkitpro/libgba/include/gba.h:
 /opt/devkitpro/libgba/include/gba_affine.h:
 /opt/devkitpro/libgba/include/gba_base.h:
@@ -40,10 +40,10 @@ Player.o: /home/ioannis/gba/gba-examples/graphics/my_demo/source/Player.c \
 /opt/devkitpro/libgba/include/gba_systemcalls.h:
 /opt/devkitpro/libgba/include/gba_timers.h:
 /opt/devkitpro/libgba/include/gba_video.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Collisions.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Map.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/level_data.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Utilities.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/Engine.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/agb.h:
-/home/ioannis/gba/gba-examples/graphics/my_demo/source/sound.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Collisions.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Map.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/level_data.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Utilities.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/Engine.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/agb.h:
+/home/ioannis/gba/gba-examples/graphics/gbagame/source/sound.h:

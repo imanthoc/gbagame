@@ -15,7 +15,7 @@ static u8 current_lvl;
 static u8 fire_anim_counter[FIRETILE_CNT];
 
 const u16 lvl_widths[LVL_CNT] = {
-    74, 184
+    74, 184, 30
 };
 
 void reset_lvl(u8 c, void *scb)

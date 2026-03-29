@@ -234,13 +234,13 @@ static void check_level_progression()
         }
     }
 }
-#define DEBUG
+//#define DEBUG
 static void tick_state_normal()
 {
 #ifdef DEBUG
     if (0)
 #else
-    if (check_extant_from_enemy(pl_get_x() + 8, pl_get_y() + 25) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
+    if (check_extant_from_boss(pl_get_x() + 4, pl_get_y() + 16) || check_extant_from_enemy(pl_get_x() + 8, pl_get_y() + 25) || check_extant_from_fire(pl_get_x() + 8, pl_get_y() + 31))
 #endif
     {
         game_state = GAME_STATE_OVER;
@@ -261,6 +261,11 @@ static void tick_state_normal()
     // lvl stuff
     check_level_progression();
     advance_fire_anim();
+
+    if (current_lvl == 2 && is_boss_dead())
+    {
+        game_state = GAME_STATE_OVER;
+    }
 }
 
 static void tick_state_over()

@@ -19,7 +19,7 @@
 #ifndef GRIT_LVL1_H
 #define GRIT_LVL1_H
 
-#define LVL_CNT 2
+#define LVL_CNT 3
 #define BLOCKTILE_CNT 20
 #define FIRETILE_CNT 20
 
@@ -42,6 +42,13 @@ extern const unsigned short lvl2Map[3680];
 
 #define lvl2PalLen 512
 extern const unsigned short lvl2Pal[256];
+
+///////////////////////////////////////////////////////////////////////
+#define lvl3TilesLen 1312
+extern const unsigned int lvl3Tiles[328];
+
+#define lvl3MapLen 1200
+extern const unsigned short lvl3Map[600];
 
 ///////////////////////////////////////////////////////////////////////
 #define arrowTileLen 32
